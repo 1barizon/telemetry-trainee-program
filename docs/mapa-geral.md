@@ -19,7 +19,7 @@
 - [Padrão de Entregas](padrao-entregas.md)
 - [Status dos Trainees](status.md)
 - [Boas Praticas de PR](boas-praticas-pr.md)
-- [Padrao de Branches e PRs](padrao-branches-prs.md)
+- [Padrao de PRs](padrao-branches-prs.md)
 - [FAQ](faq.md)
 - [Guia do Instrutor](guia-instrutor.md)
 

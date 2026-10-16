@@ -12,8 +12,8 @@ Bem-vindo ao treinamento do time de telemetria da Serra Rocketry.
 
 ## Regras basicas
 
-- Cada entrega vira um PR (do seu fork para a `main`)
-- Branch no formato `nome-sobrenome`
+- Trabalhe na `main` do seu fork
+- Cada entrega vira um PR (do seu fork para a `main` original)
 - Entrega em `entregas/nome-sobrenome/semana-XX/`, sem apagar o material do repo
 - README da semana com instrucoes sempre
 - A cada semana, sincronize o fork e abra uma nova PR

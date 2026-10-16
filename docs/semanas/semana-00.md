@@ -18,17 +18,16 @@ Defina nome e email global do Git.
 
 ### 2. Criar fork do repositório
 
-Faça um fork de `Serra-Rocketry/telemetry-trainee-program` para a sua conta do GitHub. O fork é a sua cópia pessoal do repositório, onde você tem permissão de escrita para criar branches e enviar commits.
+Faça um fork de `Serra-Rocketry/telemetry-trainee-program` para a sua conta do GitHub. O fork é a sua cópia pessoal do repositório, onde você tem permissão de escrita para enviar commits e abrir Pull Requests.
 
-### 3. Clonar o seu fork e criar branch
+### 3. Clonar o seu fork
 
-Clone o **seu fork** (não o repositório original) e crie uma branch com seu nome: `seu-nome-sobrenome`.
+Clone o **seu fork** (não o repositório original). Você vai trabalhar na branch `main` do seu fork.
 
 ```bash
 git clone https://github.com/<seu-usuario>/telemetry-trainee-program.git
 cd telemetry-trainee-program
 git remote add upstream https://github.com/Serra-Rocketry/telemetry-trainee-program.git
-git checkout -b seu-nome-sobrenome
 ```
 
 ### 4. Criar a estrutura de entregas
@@ -78,29 +77,27 @@ Commit usando tipo semântico (`docs: ...` ou `feat: ...`) e envie para o GitHub
 ```bash
 git add entregas/seu-nome-sobrenome
 git commit -m "docs: adiciona README pessoal e hello world da semana 00"
-git push -u origin seu-nome-sobrenome
+git push origin main
 ```
 
 ### 8. Abrir Pull Request
 
-Abra um PR do seu fork (branch `seu-nome-sobrenome`) para `main` seguindo o [template de PR](../../templates/pr-template.md).
+Abra um PR da `main` do seu fork para a `main` do repositório original, seguindo o [template de PR](../../templates/pr-template.md).
 
 ### 9. Rotina das próximas semanas
 
 A cada nova semana, depois que o PR anterior for mergeado:
 
-1. Sincronize seu fork com o repositório original (`git pull upstream main`).
-2. Traga o merge para a sua branch (`git merge main`).
-3. Crie a pasta `entregas/<seu-nome-sobrenome>/semana-XX/`.
-4. Faça as tarefas, commit e push.
-5. Abra **outra Pull Request** com os commits da nova semana.
+1. Sincronize seu fork com o repositório original (`git pull upstream main` + `git push origin main`).
+2. Crie a pasta `entregas/<seu-nome-sobrenome>/semana-XX/`.
+3. Faça as tarefas, commit e push.
+4. Abra **outra Pull Request** com os commits da nova semana.
 
 Os comandos completos estão no [Padrão de Entregas](../padrao-entregas.md#próximas-semanas-repetir-a-cada-semana).
 
 ## Critérios de aceite
 
 - [ ] Fork do repositório criado na sua conta do GitHub
-- [ ] Branch `seu-nome-sobrenome` criada e no GitHub
 - [ ] Pasta `entregas/<seu-nome-sobrenome>/` criada, sem apagar o material do repositório
 - [ ] `entregas/<seu-nome-sobrenome>/README.md` pessoal criado
 - [ ] `entregas/<seu-nome-sobrenome>/semana-00/hello.py` executando
@@ -117,7 +114,6 @@ Os comandos completos estão no [Padrão de Entregas](../padrao-entregas.md#pró
 
 - `git status` é seu melhor amigo - use antes de qualquer commit
 - `git commit --amend` corrige a mensagem do último commit (só se ainda não deu push)
-- A branch é criada uma vez só - o resto do treinamento você reusa a mesma
 - A cada semana você abre uma **nova PR** com os commits daquela semana (veja a [rotina](../padrao-entregas.md#rotina-semanal-do-aluno))
 
 ## Referências

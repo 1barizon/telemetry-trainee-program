@@ -22,9 +22,8 @@ entregas/
     │       └── saida-hello.txt
     ├── semana-01/
     │   ├── README.md
-    │   ├── parser.py
-    │   └── dados/
-    │       └── telemetria.csv
+    │   ├── leitor.py
+    │   └── evidencias/
     ├── semana-02/
     │   └── ...
     └── semana-08/
@@ -33,7 +32,7 @@ entregas/
 
 ### Regras da estrutura
 
-1. **Uma pasta por trainee**: `entregas/<seu-nome-sobrenome>/`. Use exatamente o mesmo nome da sua branch, em minúsculas e com hífen (ex.: `maria-silva`).
+1. **Uma pasta por trainee**: `entregas/<seu-nome-sobrenome>/`, em minúsculas e com hífen (ex.: `maria-silva`).
 2. **Uma subpasta por semana**: `semana-00`, `semana-01`, ..., `semana-08` (sempre com dois dígitos).
 3. **`README.md` obrigatório** em cada pasta de semana, explicando o que foi feito e como executar.
 4. **Não misture semanas**: cada entrega fica apenas na pasta da semana correspondente.
@@ -45,7 +44,7 @@ entregas/
 | Semana | Pasta | Conteúdo mínimo |
 |---|---|---|
 | 0 | `semana-00/` | `README.md` + `hello.py` |
-| 1 | `semana-01/` | `README.md` + script de leitura/análise + CSV de exemplo |
+| 1 | `semana-01/` | `README.md` + leitor/análise do CSV + resumo |
 | 2 | `semana-02/` | `README.md` + parser + validador |
 | 3 | `semana-03/` | `README.md` + sketch Arduino |
 | 4 | `semana-04/` | `README.md` + projeto PlatformIO + testes |
@@ -56,7 +55,23 @@ entregas/
 
 > Os detalhes exatos de cada entrega estão na semana correspondente em [`docs/semanas/`](semanas/) e na issue semanal.
 
+## Dados compartilhados
+
+A pasta [`entregas/dados/`](../entregas/dados/) contém os arquivos de entrada do treinamento, iguais para todos e **apenas para leitura**:
+
+```
+entregas/dados/
+├── semana-01/
+│   └── cleaned.csv
+└── semana-02/
+    └── voo_thonyan.txt
+```
+
+Não edite nem apague esses arquivos - apenas leia-os nos seus scripts.
+
 ## Rotina semanal do aluno
+
+Você trabalha direto na branch `main` do **seu fork** e abre um PR para o repositório original a cada semana.
 
 ### Primeira semana (Semana 0)
 
@@ -68,46 +83,39 @@ cd telemetry-trainee-program
 # 2. Adicione o repositório original como "upstream" (para sincronizar depois)
 git remote add upstream https://github.com/Serra-Rocketry/telemetry-trainee-program.git
 
-# 3. Crie a sua branch pessoal (uma vez só)
-git checkout -b seu-nome-sobrenome
-
-# 4. Crie a estrutura de entregas da semana
+# 3. Crie a estrutura de entregas da semana
 mkdir -p entregas/seu-nome-sobrenome/semana-00/evidencias
 # ... crie os arquivos (README.md, hello.py) dentro dela ...
 
-# 5. Commit e push
+# 4. Commit e push (na main do seu fork)
 git add entregas/seu-nome-sobrenome
 git commit -m "docs: adiciona README pessoal e hello world da semana 00"
-git push -u origin seu-nome-sobrenome
+git push origin main
 ```
 
-Depois, no GitHub: abra um **Pull Request** da sua branch (`seu-usuario:seu-nome-sobrenome`) para `Serra-Rocketry:main` e siga o [template de PR](../templates/pr-template.md).
+Depois, no GitHub: abra um **Pull Request** da `main` do seu fork para a `main` do repositório original (`Serra-Rocketry:main`) e siga o [template de PR](../templates/pr-template.md).
 
 ### Próximas semanas (repetir a cada semana)
 
-Quando o PR da semana anterior for **mergeado**, a sua branch pode ficar desatualizada em relação à `main`. Antes de começar a nova semana, sincronize:
+Quando o PR da semana anterior for **mergeado**, a `main` do seu fork fica desatualizada em relação ao repositório original. Antes de começar a nova semana, sincronize:
 
 ```bash
-# 1. Atualize o seu fork com o repositório original
+# 1. Atualize a main do seu fork com o repositório original
 git checkout main
 git pull upstream main
 git push origin main
 
-# 2. Traga o merge anterior para a sua branch pessoal
-git checkout seu-nome-sobrenome
-git merge main
-
-# 3. Crie a pasta da nova semana
+# 2. Crie a pasta da nova semana
 mkdir -p entregas/seu-nome-sobrenome/semana-01/evidencias
 # ... faça as tarefas da semana ...
 
-# 4. Commit e push
+# 3. Commit e push
 git add entregas/seu-nome-sobrenome/semana-01
-git commit -m "feat: adiciona parser de csv da semana 01"
-git push origin seu-nome-sobrenome
+git commit -m "feat: adiciona leitura e analise do CSV da semana 01"
+git push origin main
 ```
 
-Em seguida, **abra uma nova Pull Request** da mesma branch para a `main`. Como os commits da semana anterior já foram mergeados, o novo PR mostrará apenas os commits da nova semana.
+Em seguida, **abra uma nova Pull Request** da `main` do seu fork para a `main` original. Como os commits da semana anterior já foram mergeados, o novo PR mostrará apenas os commits da nova semana.
 
 > Alternativa sem terminal: use o botão **"Sync fork" → "Update branch"** no GitHub antes de começar a semana, e abra o PR com os commits novos.
 
@@ -125,7 +133,7 @@ E então o ciclo recomeça na próxima semana.
 1. O trainee abre o PR da semana.
 2. O mentor revisa `entregas/<nome>/semana-XX/` usando a checklist "Na revisão" da semana no [Guia do Instrutor](guia-instrutor.md).
 3. Se estiver correto, o mentor faz o **merge**.
-4. O status do trainee é atualizado (veja abaixo).
+4. O status do trainee é atualizado automaticamente (veja abaixo).
 
 ## Página de status
 

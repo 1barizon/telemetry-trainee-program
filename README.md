@@ -41,7 +41,7 @@ Repositório de treinamento do time de telemetria, com trilhas, semanas e entreg
 
 ## Padrões de entrega
 
-- Fork do repositório + branch `nome-sobrenome`
+- Fork do repositório (trabalhe na `main` do seu fork)
 - Entrega em `entregas/<nome-sobrenome>/semana-XX/` (sem apagar o material do repo)
 - PR com template preenchido
 - README da semana com instruções de execução

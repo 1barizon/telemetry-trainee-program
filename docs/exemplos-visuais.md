@@ -235,7 +235,7 @@ Valor
 ✅ Código compila
 ✅ Testes passam
 ✅ README atualizado
-✅ Branch nome-sobrenome
+✅ Fork sincronizado
 ✅ Commit tipo semântico
 ⬜ Screenshots (opcional)
 ```

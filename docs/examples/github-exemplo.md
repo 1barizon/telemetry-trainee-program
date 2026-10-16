@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Mostrar o fluxo completo de contribuição: fork, branch pessoal e PR com a entrega dentro de `entregas/`.
+Mostrar o fluxo completo de contribuição: fork, commits na `main` do fork e PR com a entrega dentro de `entregas/`.
 
 ## Passo a passo
 
@@ -14,10 +14,7 @@ cd telemetry-trainee-program
 # 2. Registrar o repositório original para sincronizar depois
 git remote add upstream https://github.com/Serra-Rocketry/telemetry-trainee-program.git
 
-# 3. Criar a branch pessoal
-git checkout -b maria-silva
-
-# 4. Criar a estrutura de entregas da semana
+# 3. Criar a estrutura de entregas da semana (você trabalha na main do seu fork)
 mkdir -p entregas/maria-silva/semana-00/evidencias
 
 echo "# Maria Silva - Trainee Telemetria" > entregas/maria-silva/README.md
@@ -31,40 +28,36 @@ if __name__ == "__main__":
     main()
 EOF
 
-# 5. Commitar (use o prefixo da tecnologia)
+# 4. Commitar (use o prefixo da tecnologia)
 git add entregas/maria-silva
 git commit -m "docs: adiciona README pessoal e hello world da semana 00"
 
-# 6. Enviar para o GitHub (o seu fork, não o repositório original)
-git push -u origin maria-silva
+# 5. Enviar para o GitHub (o seu fork, não o repositório original)
+git push origin main
 
-# 7. Abrir PR no GitHub:
+# 6. Abrir PR no GitHub:
 #    - Ir até o repositório ORIGINAL (Serra-Rocketry/telemetry-trainee-program)
 #    - Clicar em "Pull Request" / "Compare across forks"
-#    - Base: main (original) ← Compare: maria-silva (seu fork)
+#    - Base: main (original) <- Compare: main (seu fork)
 #    - Preencher o template
 
-# 8. Após aprovação, o mentor faz o merge
+# 7. Após aprovação, o mentor faz o merge
 ```
 
 ## Nova semana depois de um merge
 
 ```bash
-# Sincronizar o fork com o repositório original
+# Sincronizar a main do seu fork com o repositório original
 git checkout main
 git pull upstream main
 git push origin main
-
-# Trazer o merge para a sua branch
-git checkout maria-silva
-git merge main
 
 # Criar a pasta da nova semana e trabalhar nela
 mkdir -p entregas/maria-silva/semana-01
 
 git add entregas/maria-silva/semana-01
-git commit -m "feat: adiciona parser csv da semana 01"
-git push origin maria-silva
+git commit -m "feat: adiciona leitura e analise do CSV da semana 01"
+git push origin main
 # Abrir uma NOVA PR com os commits da semana
 ```
 
@@ -74,12 +67,12 @@ git push origin maria-silva
 ## Semana 0 - Onboarding & GitHub
 
 ## O que foi feito
-- [x] Fork e branch `maria-silva` criados
+- [x] Fork criado e clonado
 - [x] README pessoal em `entregas/maria-silva/README.md`
 - [x] `entregas/maria-silva/semana-00/hello.py`
 
 ## Como testar
-1. `git checkout maria-silva`
+1. `git pull`
 2. `python entregas/maria-silva/semana-00/hello.py`
 
 ## Critérios de aceite

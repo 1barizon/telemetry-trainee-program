@@ -16,7 +16,7 @@ Logs, prints ou resultados do script.
 
 ## Checklist
 
-- [ ] Fork e branch seguem o padrão (`seu-nome-sobrenome`)
+- [ ] Fork criado e `main` do fork sincronizada
 - [ ] Entrega em `entregas/<nome-sobrenome>/semana-XX/` (sem apagar o material do repo)
 - [ ] Commits com tipo semântico (`feat`, `fix`, `docs`, `test`, ...)
 - [ ] Código executa sem erros

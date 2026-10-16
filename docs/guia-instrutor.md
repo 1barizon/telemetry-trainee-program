@@ -16,7 +16,7 @@ Roteiro para conduzir o treinamento semana a semana.
 Mini-aula:
 - O que é git? Clone, add, commit, push, pull
 - Fork vs clone: por que cada trainee trabalha no próprio fork
-- Branches: por que usar, como nomear
+- Fluxo: trabalhar na `main` do fork e abrir PR para o repositório original
 - PRs: template, revisão, merge
 - Estrutura de entregas: `entregas/nome-sobrenome/semana-XX/`
 - Convenção de commits semânticos
@@ -27,7 +27,7 @@ Perguntas para discussão:
 - Por que commits semânticos?
 
 Na revisão de PRs:
-- Confira se o fork, a branch e a pasta `entregas/nome-sobrenome/` seguem o padrão
+- Confira se o fork e a pasta `entregas/nome-sobrenome/` seguem o padrão
 - Confira se o material do repositório não foi apagado
 - Confira o formato do commit
 - Dê feedback sobre a qualidade do README
@@ -176,7 +176,7 @@ Avaliação:
 
 ## Checklist rápido do revisor
 
-- [ ] PR vem de um fork, da branch `nome-sobrenome`
+- [ ] PR vem de um fork (da `main` do trainee)
 - [ ] Entrega em `entregas/<nome-sobrenome>/semana-XX/` (material do repo intacto)
 - [ ] PR segue o template
 - [ ] Commits com tipos semânticos

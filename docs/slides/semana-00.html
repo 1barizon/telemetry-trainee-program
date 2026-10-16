@@ -37,7 +37,7 @@
         <h2>Objetivos de Aprendizado</h2>
         <ul>
           <li>Configurar o ambiente de desenvolvimento completo</li>
-          <li>Dominar o fluxo básico do Git (clone, branch, commit, push)</li>
+          <li>Dominar o fluxo básico do Git (fork, clone, commit, push)</li>
           <li>Abrir seu primeiro Pull Request</li>
           <li>Entender a estrutura e o fluxo do treinamento</li>
         </ul>
@@ -110,17 +110,15 @@ git remote add upstream https://github.com/Serra-Rocketry/telemetry-trainee-prog
       </section>
 
       <section>
-        <h2>Criando sua Branch</h2>
-        <p>Cada trainee trabalha na própria branch:</p>
-        <pre><code class="language-bash"># Criar e mudar para a branch
-git checkout -b seu-nome-sobrenome
-
-# Verificar branches existentes
-git branch
+        <h2>Trabalhando no Fork</h2>
+        <p>Você trabalha na branch <code>main</code> do seu fork (não precisa criar branch pessoal):</p>
+        <pre><code class="language-bash"># Sincronizar a main do fork com o repositório original
+git checkout main
+git pull upstream main
 
 # Verificar status
 git status</code></pre>
-        <p class="objective">Nunca commitar na branch <code>main</code> ou <code>master</code>.</p>
+        <p class="objective">Só escreva dentro de <code>entregas/&lt;nome&gt;/</code>.</p>
       </section>
 
       <section>
@@ -130,14 +128,14 @@ git status
 git diff
 
 # Adicionar arquivos ao stage
-git add arquivo.py
+git add entregas/seu-nome-sobrenome
 git add .               # todos os arquivos
 
 # Criar o commit
-git commit -m "semana-00: adiciona script hello world"
+git commit -m "docs: adiciona hello world da semana 00"
 
-# Enviar para o GitHub
-git push -u origin seu-nome-sobrenome</code></pre>
+# Enviar para o GitHub (seu fork)
+git push origin main</code></pre>
         <p>Commits devem ser <strong>atômicos</strong> e com mensagens descritivas.</p>
       </section>
 
@@ -152,7 +150,7 @@ if __name__ == "__main__":
     main()</code></pre>
         <ol>
           <li>Commit e push do arquivo</li>
-          <li>Ir ao GitHub.com → abrir PR da sua branch para <code>main</code></li>
+          <li>Ir ao GitHub.com → abrir PR da <code>main</code> do fork para <code>main</code> original</li>
           <li>Título: <em>"Semana 00 — Nome Sobrenome"</em></li>
           <li>Adicionar revisores (mentores)</li>
         </ol>
@@ -231,25 +229,24 @@ Adiciona script inicial hello.py conforme requisito da Semana 00.
       <section>
         <h2>Rotina das Próximas Semanas</h2>
         <ol>
-          <li>Sincronize o fork: <code>git pull upstream main</code> e <code>git merge main</code></li>
+          <li>Sincronize o fork: <code>git pull upstream main</code></li>
           <li>Crie <code>entregas/&lt;nome&gt;/semana-XX/</code></li>
-          <li>Commit + push</li>
+          <li>Commit + push na <code>main</code> do fork</li>
           <li>Abra uma <strong>nova PR</strong> com os commits da semana</li>
         </ol>
         <pre><code class="language-bash">git checkout main && git pull upstream main && git push origin main
-git checkout seu-nome-sobrenome && git merge main
 mkdir -p entregas/seu-nome-sobrenome/semana-01
 # ... trabalhe na semana ...
 git add entregas/seu-nome-sobrenome/semana-01
 git commit -m "feat: entrega da semana 01"
-git push origin seu-nome-sobrenome</code></pre>
+git push origin main</code></pre>
       </section>
 
       <section>
         <h2>Resumo & Conclusão</h2>
         <ul>
           <li>Ambiente configurado e verificado</li>
-          <li>Fluxo Git: fork → clone → branch → commit → push → PR</li>
+          <li>Fluxo Git: fork → clone → commit → push → PR</li>
           <li>Entrega padronizada em <code>entregas/&lt;nome&gt;/semana-XX/</code></li>
           <li>Primeiro PR "hello world" criado</li>
           <li>Estrutura do treinamento compreendida</li>

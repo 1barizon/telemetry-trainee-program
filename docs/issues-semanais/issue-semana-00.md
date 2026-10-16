@@ -8,7 +8,7 @@ Preparar ambiente e validar fluxo de PR.
 
 - [ ] Instalar ferramentas (VSCode, Python, Arduino, PlatformIO, KiCad)
 - [ ] Fazer fork do repositório do treinamento para sua conta
-- [ ] Clonar o fork e criar branch `nome-sobrenome`
+- [ ] Clonar o fork
 - [ ] Criar a pasta `entregas/nome-sobrenome/semana-00/` (sem apagar o material do repo)
 - [ ] Criar `entregas/nome-sobrenome/README.md` (README pessoal)
 - [ ] Criar `entregas/nome-sobrenome/semana-00/hello.py`
@@ -18,7 +18,6 @@ Preparar ambiente e validar fluxo de PR.
 
 - [ ] PR segue template
 - [ ] Fork criado na sua conta
-- [ ] Branch nomeada corretamente
 - [ ] Entrega dentro de `entregas/nome-sobrenome/semana-00/`
 - [ ] README explica como executar o "hello"
 

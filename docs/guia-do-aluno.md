@@ -4,15 +4,15 @@ Este guia explica o fluxo do treinamento e o que se espera de cada entrega.
 
 ## Como funciona
 
-1. Faça fork do repositório e crie a branch `nome-sobrenome`
+1. Faça fork do repositório e clone o seu fork (você trabalha na `main` do fork)
 2. Leia a semana atual e a issue semanal correspondente
 3. Desenvolva dentro de `entregas/<nome-sobrenome>/semana-XX/` (veja o [Padrão de Entregas](padrao-entregas.md))
-4. Abra PR do seu fork para a `main` usando o template
+4. Abra PR do seu fork para a `main` original usando o template
 5. Participe da revisão semanal; depois do merge, sincronize o fork e siga para a próxima semana
 
 ```mermaid
 flowchart LR
-    A[Fork + branch nome-sobrenome] --> B[Semana atual]
+    A[Fork + clonar fork] --> B[Semana atual]
     B --> C[Issue semanal]
     C --> D[entregas/nome-sobrenome/semana-XX]
     D --> E[PR com template]
