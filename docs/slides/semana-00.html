@@ -85,9 +85,28 @@ code --version</code></pre>
         <p>Configure seu nome e email (globais):</p>
         <pre><code class="language-bash">git config --global user.name "Seu Nome"
 git config --global user.email "seu@email.com"</code></pre>
-        <p>Clone o repositório do treinamento:</p>
-        <pre><code class="language-bash">git clone https://github.com/organizacao/telemetry-trainee-program.git
-cd telemetry-trainee-program</code></pre>
+        <p>Faça um <strong>fork</strong> no GitHub e clone o <strong>seu fork</strong>:</p>
+        <pre><code class="language-bash">git clone https://github.com/&lt;seu-usuario&gt;/telemetry-trainee-program.git
+cd telemetry-trainee-program
+git remote add upstream https://github.com/Serra-Rocketry/telemetry-trainee-program.git</code></pre>
+        <p class="objective">Você trabalha no seu fork e abre PR para o repositório original.</p>
+      </section>
+
+      <section>
+        <h2>Estrutura de Entregas</h2>
+        <p>Cada trainee entrega dentro de <code>entregas/&lt;nome-sobrenome&gt;/</code>:</p>
+        <pre><code class="language-text">entregas/
+└── seu-nome-sobrenome/
+    ├── README.md              # índice pessoal
+    └── semana-00/
+        ├── README.md          # o que foi feito
+        └── hello.py</code></pre>
+        <ul>
+          <li><strong>Nunca apague</strong> o material do repositório</li>
+          <li>Uma subpasta por semana: <code>semana-00</code> … <code>semana-08</code></li>
+          <li>Todo commit vai dentro da sua pasta</li>
+        </ul>
+        <p class="objective">Detalhes na doc "Padrão de Entregas".</p>
       </section>
 
       <section>
@@ -124,7 +143,7 @@ git push -u origin seu-nome-sobrenome</code></pre>
 
       <section>
         <h2>Pull Request "Hello World"</h2>
-        <p>Objetivo: criar um arquivo <code>hello.py</code> na sua branch e abrir um PR.</p>
+        <p>Objetivo: criar <code>entregas/&lt;nome&gt;/semana-00/hello.py</code> e abrir um PR.</p>
         <pre><code class="language-python"># hello.py
 def main():
     print("Hello from telemetry trainee!")
@@ -210,10 +229,28 @@ Adiciona script inicial hello.py conforme requisito da Semana 00.
       </section>
 
       <section>
+        <h2>Rotina das Próximas Semanas</h2>
+        <ol>
+          <li>Sincronize o fork: <code>git pull upstream main</code> e <code>git merge main</code></li>
+          <li>Crie <code>entregas/&lt;nome&gt;/semana-XX/</code></li>
+          <li>Commit + push</li>
+          <li>Abra uma <strong>nova PR</strong> com os commits da semana</li>
+        </ol>
+        <pre><code class="language-bash">git checkout main && git pull upstream main && git push origin main
+git checkout seu-nome-sobrenome && git merge main
+mkdir -p entregas/seu-nome-sobrenome/semana-01
+# ... trabalhe na semana ...
+git add entregas/seu-nome-sobrenome/semana-01
+git commit -m "feat: entrega da semana 01"
+git push origin seu-nome-sobrenome</code></pre>
+      </section>
+
+      <section>
         <h2>Resumo & Conclusão</h2>
         <ul>
           <li>Ambiente configurado e verificado</li>
-          <li>Fluxo Git: clone → branch → commit → push → PR</li>
+          <li>Fluxo Git: fork → clone → branch → commit → push → PR</li>
+          <li>Entrega padronizada em <code>entregas/&lt;nome&gt;/semana-XX/</code></li>
           <li>Primeiro PR "hello world" criado</li>
           <li>Estrutura do treinamento compreendida</li>
         </ul>

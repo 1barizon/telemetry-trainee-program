@@ -14,7 +14,7 @@ GitHub é a plataforma central do treinamento e dos projetos da Serra Rocketry. 
 
 ```mermaid
 flowchart TD
-    A[Clonar repositorio] --> B[Criar branch]
+    A[Fork + clonar fork] --> B[Criar branch]
     B --> C[Desenvolver feature]
     C --> D[Commit com tipo semantico]
     D --> E[Push para GitHub]
@@ -60,8 +60,12 @@ git config --global user.email "seu@email.com"
 ### 1.2 Comandos essenciais
 
 ```bash
-# Clonar o repositório
-git clone https://github.com/Serra-Rocketry/telemetry-trainee-program.git
+# Clonar o SEU fork (veja o passo a passo de fork no Padrão de Entregas)
+git clone https://github.com/<seu-usuario>/telemetry-trainee-program.git
+cd telemetry-trainee-program
+
+# Registrar o repositório original para sincronizar
+git remote add upstream https://github.com/Serra-Rocketry/telemetry-trainee-program.git
 
 # Ver status das alterações
 git status
@@ -136,13 +140,14 @@ teste
 
 ## 2. Estratégia de branches
 
-No treinamento, cada membro trabalha em sua própria branch:
+No treinamento, cada membro trabalha em sua própria branch, criada no seu fork:
 
 ```
-main
- └── vinicius-souza      # branch pessoal
- └── maria-silva         # branch pessoal
- └── joao-pereira        # branch pessoal
+Serra-Rocketry/telemetry-trainee-program (original)
+ └── <seu-usuario>/telemetry-trainee-program (seu fork)
+      └── vinicius-souza      # branch pessoal
+      └── maria-silva         # branch pessoal
+      └── joao-pereira        # branch pessoal
 ```
 
 ```bash
@@ -154,6 +159,8 @@ git push -u origin seu-nome-sobrenome
 ```
 
 > Regra: nunca commitar diretamente na `main`. Sempre usar branch pessoal e abrir PR.
+
+As entregas ficam em `entregas/<seu-nome-sobrenome>/semana-XX/` — veja o [Padrão de Entregas](../padrao-entregas.md).
 
 ---
 
@@ -199,9 +206,9 @@ O PR é o mecanismo de entrega do treinamento. Toda semana você abre um PR da s
 
 ### 4.1 Abrindo um PR
 
-1. Faça suas alterações na branch `seu-nome-sobrenome`
-2. Commit e push
-3. No GitHub, clique em "Pull Request"
+1. Faça suas alterações na branch `seu-nome-sobrenome`, dentro de `entregas/seu-nome-sobrenome/semana-XX/`
+2. Commit e push para o seu fork
+3. No GitHub, abra o PR do seu fork para a `main` do repositório original ("Compare across forks")
 4. Preencha o [template de PR](../../templates/pr-template.md)
 5. Solicite revisão
 
@@ -244,12 +251,13 @@ Na revisão semanal, o instrutor (ou um colega) vai revisar seu código:
 ```
 1. Instrutor abre issue da semana
 2. Trainee lê a issue e a trilha correspondente
-3. Trainee cria branch "nome-sobrenome" (uma vez só)
-4. Trainee faz as tarefas, commit e push
-5. Trainee abre PR usando o template
-6. Instrutor revisa no encontro semanal
-7. PR é aprovado e mergeado
-8. Avança para a próxima semana 🚀
+3. Trainee faz fork e cria branch "nome-sobrenome" (uma vez só)
+4. Trainee cria a pasta entregas/nome-sobrenome/semana-XX/ e faz as tarefas
+5. Trainee faz commit e push
+6. Trainee abre PR do fork para a main, usando o template
+7. Instrutor revisa no encontro semanal
+8. PR é aprovado e mergeado
+9. Na próxima semana, trainee sincroniza o fork e abre uma nova PR 🚀
 ```
 
 ---
@@ -271,15 +279,16 @@ Os projetos podem usar Projects para acompanhar o progresso:
 
 1. Crie sua conta GitHub (se não tiver).
 2. Configure git local (nome, email).
-3. Clone este repositório.
+3. Faça um **fork** do repositório e clone o seu fork.
 4. Crie sua branch `seu-nome-sobrenome`.
 
 ### Nível 2 - Primeira entrega
 
-1. Adicione um arquivo `README.md` na raiz com seu nome e objetivos.
-2. Commit com mensagem descritiva.
-3. Push para sua branch.
-4. Abra um PR para `main` usando o template.
+1. Crie a pasta `entregas/seu-nome-sobrenome/semana-00/`.
+2. Adicione dois arquivos: um `README.md` (na pasta pessoal, com seu nome e objetivos) e um `hello.py` (na pasta da semana).
+3. Commit com mensagem descritiva.
+4. Push para sua branch.
+5. Abra um PR para `main` usando o template.
 
 ### Nível 3 - Colaboração
 
@@ -298,13 +307,14 @@ Os projetos podem usar Projects para acompanhar o progresso:
 
 ## Entregas relacionadas
 
-- [Semana 0](../semanas/semana-00.md): Setup + PR "hello world"
-- Todas as semanas: PR com entrega semanal
+- [Semana 0](../semanas/semana-00.md): fork, setup + estrutura `entregas/` + PR "hello world"
+- Todas as semanas: PR com entrega em `entregas/<nome-sobrenome>/semana-XX/`
 
 ## Critérios de aceite
 
-- Branch nomeada como `nome-sobrenome`
+- Fork criado e branch nomeada como `nome-sobrenome`
+- Entrega em `entregas/nome-sobrenome/semana-XX/` (sem apagar o material do repo)
 - PR segue o template
-- README com instruções
+- README da semana com instruções
 - Commits com mensagens claras
 - Participou da revisão de PR

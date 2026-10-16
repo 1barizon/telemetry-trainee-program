@@ -54,10 +54,21 @@ treinamento-telemetria/
 │   ├── python/
 │   ├── arduino/
 │   └── platformio/
+├── scripts/
+│   └── gerar-status.py          # gera docs/status.md a partir de entregas/
+├── entregas/                    # entregas dos trainees (uma pasta por aluno)
+│   └── nome-sobrenome/
+│       ├── README.md
+│       └── semana-00/
+│           └── ...
 ├── README.md
 ├── README-alunos.md
 └── _config.yml
 ```
+
+## Entregas dos trainees
+
+Cada aluno entrega dentro de `entregas/<nome-sobrenome>/semana-XX/`, sem apagar o material do programa. A estrutura completa e a rotina semanal estão no [Padrão de Entregas](padrao-entregas.md).
 
 ## Trilhas de Conteúdo
 

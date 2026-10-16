@@ -4,19 +4,22 @@ Este guia explica o fluxo do treinamento e o que se espera de cada entrega.
 
 ## Como funciona
 
-1. Leia a semana atual
-2. Consulte a issue semanal correspondente
-3. Desenvolva na branch `nome-sobrenome`
-4. Abra PR usando o template
-5. Participe da revisao semanal
+1. Faça fork do repositório e crie a branch `nome-sobrenome`
+2. Leia a semana atual e a issue semanal correspondente
+3. Desenvolva dentro de `entregas/<nome-sobrenome>/semana-XX/` (veja o [Padrão de Entregas](padrao-entregas.md))
+4. Abra PR do seu fork para a `main` usando o template
+5. Participe da revisão semanal; depois do merge, sincronize o fork e siga para a próxima semana
 
 ```mermaid
 flowchart LR
-    A[Semana atual] --> B[Issue semanal]
-    B --> C[Branch nome-sobrenome]
-    C --> D[PR com template]
-    D --> E[Revisao semanal]
+    A[Fork + branch nome-sobrenome] --> B[Semana atual]
+    B --> C[Issue semanal]
+    C --> D[entregas/nome-sobrenome/semana-XX]
+    D --> E[PR com template]
+    E --> F[Revisao semanal]
 ```
+
+> Regra de ouro: **nunca apague o material do repositório** — você só adiciona arquivos na sua pasta em `entregas/`.
 
 ## Fluxo do Treinamento
 
@@ -62,11 +65,13 @@ graph LR
 ## Onde encontrar tudo
 
 - Roadmap: [roadmap-8-semanas](roadmap-8-semanas.md)
+- Entregas: [Padrão de Entregas](padrao-entregas.md)
 - Semanas: [Semanas do Treinamento](semanas/README.md)
 - Issues semanais: [Issues Semanais (Exemplos)](issues-semanais/README.md)
 - Trilhas: [Trilhas de Conteudo](trilhas/README.md)
 - Exemplos: [Exemplos Minimos](examples/README.md)
 - Exemplos Visuais: [Guia Visual](exemplos-visuais.md)
+- Status: [Progresso dos trainees](status.md)
 
 ## Dicas
 

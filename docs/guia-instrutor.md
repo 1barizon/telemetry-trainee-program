@@ -15,8 +15,10 @@ Roteiro para conduzir o treinamento semana a semana.
 
 Mini-aula:
 - O que é git? Clone, add, commit, push, pull
+- Fork vs clone: por que cada trainee trabalha no próprio fork
 - Branches: por que usar, como nomear
 - PRs: template, revisão, merge
+- Estrutura de entregas: `entregas/nome-sobrenome/semana-XX/`
 - Convenção de commits semânticos
 
 Perguntas para discussão:
@@ -25,9 +27,15 @@ Perguntas para discussão:
 - Por que commits semânticos?
 
 Na revisão de PRs:
-- Confira se a branch segue o padrão
+- Confira se o fork, a branch e a pasta `entregas/nome-sobrenome/` seguem o padrão
+- Confira se o material do repositório não foi apagado
 - Confira o formato do commit
 - Dê feedback sobre a qualidade do README
+
+Rotina do mentor ao mergear:
+- Use a checklist "Na revisão" da semana correspondente (mais abaixo)
+- Aprove e faça o merge do PR
+- O `docs/status.md` é atualizado automaticamente após o merge
 
 ## Semana 1 - Python básico
 
@@ -168,8 +176,16 @@ Avaliação:
 
 ## Checklist rápido do revisor
 
+- [ ] PR vem de um fork, da branch `nome-sobrenome`
+- [ ] Entrega em `entregas/<nome-sobrenome>/semana-XX/` (material do repo intacto)
 - [ ] PR segue o template
 - [ ] Commits com tipos semânticos
-- [ ] Entrega atende o objetivo
-- [ ] README explica como reproduzir
+- [ ] Entrega atende o objetivo da semana
+- [ ] README da semana explica como reproduzir
 - [ ] Código organizado e legível
+
+## Referências
+
+- [Padrão de Entregas](padrao-entregas.md)
+- [Guia do Aluno](guia-do-aluno.md)
+- [Status dos trainees](status.md)

@@ -5,10 +5,12 @@ Repositório de treinamento do time de telemetria, com trilhas, semanas e entreg
 ## Comece aqui
 
 - [Guia do Aluno](docs/guia-do-aluno.md)
+- [Padrão de Entregas](docs/padrao-entregas.md)
 - [Roadmap 8 semanas](docs/roadmap-8-semanas.md)
 - [Calendario](docs/calendario.md)
 - [Pagina inicial (GitHub Pages)](docs/index.md)
 - [Mapa Geral](docs/mapa-geral.md)
+- [Status dos trainees](docs/status.md)
 - [Exemplos Visuais](docs/exemplos-visuais.md)
 
 ## Trilhas de Conteúdo
@@ -39,10 +41,13 @@ Repositório de treinamento do time de telemetria, com trilhas, semanas e entreg
 
 ## Padrões de entrega
 
-- Branch: `nome-sobrenome`
+- Fork do repositório + branch `nome-sobrenome`
+- Entrega em `entregas/<nome-sobrenome>/semana-XX/` (sem apagar o material do repo)
 - PR com template preenchido
-- README com instruções de execução
+- README da semana com instruções de execução
 - Commits com tipos semânticos (`feat:`, `fix:`, `docs:`, `test:`)
+
+Detalhes completos no [Padrão de Entregas](docs/padrao-entregas.md).
 
 ## Estrutura
 

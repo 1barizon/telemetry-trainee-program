@@ -26,6 +26,8 @@ Bem-vindo ao treinamento do time de telemetria e controle da Serra Rocketry.
 
 ## Padrões e suporte
 
+- [Padrão de Entregas](padrao-entregas.md)
+- [Status dos Trainees](status.md)
 - [Boas Práticas de PR](boas-praticas-pr.md)
 - [Padrão de Branches e PRs](padrao-branches-prs.md)
 - [Guia do Instrutor](guia-instrutor.md)
