@@ -43,6 +43,17 @@
       </section>
 
       <section>
+        <h2>Contexto</h2>
+        <p>Durante o voo, o foguete envia os pacotes por rádio e o <strong>computador da base</strong> recebe tudo como um <strong>log cru</strong>.</p>
+        <ul>
+          <li>Misturado com mensagens do receptor e pacotes incompletos</li>
+          <li>A base precisa <strong>limpar rápido</strong> para <strong>plotar em tempo real</strong></li>
+          <li>Plotar lixo = leitura inútil do voo</li>
+        </ul>
+        <pre><code class="language-text">log cru  ->  [parser + validador]  ->  dados limpos (CSV)  ->  gráficos</code></pre>
+      </section>
+
+      <section>
         <h2>O Log Cru</h2>
         <p>Arquivo <code>entregas/dados/semana-02/voo_thonyan.txt</code> - log serial de uma sessão de recepção:</p>
         <pre><code class="language-text">[LoRa] RX (RSSI=-121): #51,2003976,...   # pacote via LoRa (22 campos)
@@ -147,6 +158,21 @@ def validar(pacote):
       </section>
 
       <section>
+        <h2>Gerar o CSV Tratado</h2>
+        <p>Salve os pacotes válidos em <code>dados_tratados.csv</code>, <strong>com cabeçalho</strong>:</p>
+        <pre><code class="language-python">import csv
+
+with open("dados_tratados.csv", "w", newline="") as f:
+    escritor = csv.DictWriter(f, fieldnames=COLUNAS)
+    escritor.writeheader()
+    for pacote in pacotes_validos:
+        escritor.writerow(pacote)</code></pre>
+        <pre><code class="language-text">ID,millis,pckt,alt,temp,humi,press,gx,gy,gz,ax,ay,az,vz,maxalt,state,hora,data,gps_alt,lat,lon,sat,pqd,rssi
+51,2003976,34647,39.53,42.34,...</code></pre>
+        <p class="objective">Com cabeçalho, o Colab lê direto - sem <code>header=None</code>.</p>
+      </section>
+
+      <section>
         <h2>Saída Esperada</h2>
         <pre><code class="language-text">Processando...
 
@@ -158,7 +184,8 @@ Resumo:
   Valid rej:          0
   Taxa OK:          100%
   Ignoradas:         80
-  Pacotes perdidos: 762</code></pre>
+  Pacotes perdidos: 762
+CSV tratado salvo em dados_tratados.csv</code></pre>
         <p class="objective">38 pacotes + 80 linhas ignoradas = 118 linhas.</p>
       </section>
 
@@ -167,7 +194,18 @@ Resumo:
         <p>As linhas <code>[LOST]</code> trazem quantos pacotes não chegaram entre dois contadores:</p>
         <pre><code class="language-text">[LOST] 22 pacote(s) perdido(s) — count 34647 -> 34670</code></pre>
         <p>Some o valor de cada linha para obter o total (<code>762</code> neste log).</p>
-        <p class="objective">Dica: um pacote válido também pode ser exportado para um CSV limpo.</p>
+        <p class="objective">Bônus: mostrar quantos pacotes se perderam no enlace de rádio.</p>
+      </section>
+
+      <section>
+        <h2>Rodar no Colab</h2>
+        <p>O CSV tratado abre direto no Colab (como na Semana 1):</p>
+        <pre><code class="language-python">import pandas as pd
+df = pd.read_csv("dados_tratados.csv")   # já tem cabeçalho
+df["tempo_s"] = (df["millis"] - df["millis"].min()) / 1000
+
+df.plot(x="tempo_s", y=["ax", "ay", "az"])   # aceleração x tempo</code></pre>
+        <p class="objective">Mesmos gráficos da Semana 1, agora a partir dos dados limpos.</p>
       </section>
 
       <section>
@@ -175,9 +213,9 @@ Resumo:
         <ol>
           <li>Implementar o <code>parse_packet</code> (rejeitar 22 campos sem quebrar)</li>
           <li>Implementar <code>validar</code> com todos os ranges</li>
-          <li>Processar o log e exibir o resumo</li>
-          <li>Contar os pacotes perdidos a partir das linhas <code>[LOST]</code></li>
-          <li>(Extra) Exportar os pacotes válidos para um CSV</li>
+          <li>Gerar o <code>dados_tratados.csv</code> com cabeçalho</li>
+          <li>Abrir o CSV no Colab e refazer os gráficos da Semana 1</li>
+          <li>(Extra) Contar os pacotes perdidos a partir das linhas <code>[LOST]</code></li>
         </ol>
         <p class="objective">Entregar via PR até domingo.</p>
       </section>
@@ -188,7 +226,7 @@ Resumo:
           <li>Parser extrai apenas os pacotes de 24 campos</li>
           <li>Linhas de meta (<code>[STATS]</code>, <code>[MESH]</code>, <code>[LOST]</code>) são ignoradas</li>
           <li>Validação em duas camadas: formato e range</li>
-          <li>Resumo e contagem de pacotes perdidos</li>
+          <li><code>dados_tratados.csv</code> gerado e plotado no Colab</li>
         </ul>
         <p>Python é a ponte entre o hardware e a análise de dados.</p>
         <p class="subtitle">Próximo passo: Semana 03 — Arduino IDE</p>
