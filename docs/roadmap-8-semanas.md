@@ -17,8 +17,9 @@ Trilha principal: [GitHub](trilhas/github.md)
 
 Entregas (issues):
 - Setup (VSCode, Python, Arduino, PlatformIO, KiCad)
-- Clonar repo + criar branch `nome-sobrenome`
-- PR "hello world" + README pessoal
+- Fork do repo + clone do fork + criar branch `nome-sobrenome`
+- Criar a estrutura `entregas/<nome-sobrenome>/semana-00/`
+- PR "hello world" + README pessoal (dentro de `entregas/`)
 
 Extra (opcional):
 - Checklist de leitura rápida (documentação do time)
