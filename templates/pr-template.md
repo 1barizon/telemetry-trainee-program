@@ -16,10 +16,11 @@ Logs, prints ou resultados do script.
 
 ## Checklist
 
-- [ ] Branch segue o padrão `nome-sobrenome`
+- [ ] Fork e branch seguem o padrão (`seu-nome-sobrenome`)
+- [ ] Entrega em `entregas/<nome-sobrenome>/semana-XX/` (sem apagar o material do repo)
 - [ ] Commits com tipo semântico (`feat`, `fix`, `docs`, `test`, ...)
 - [ ] Código executa sem erros
-- [ ] README atualizado com instruções
+- [ ] README da semana atualizado com instruções
 
 ## Dificuldades
 
