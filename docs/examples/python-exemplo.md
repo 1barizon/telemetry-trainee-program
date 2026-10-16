@@ -1,115 +1,123 @@
-# Exemplo - Python: Leitura e Análise de Telemetria
+# Exemplo - Colab: Análise de Telemetria (Semana 1)
 
 ## Objetivo
 
-Ler o CSV de telemetria da Semana 1 com `pandas`, calcular estatísticas e gerar um gráfico.
+Mostrar, célula por célula, como analisar o `cleaned.csv` no Google Colab com **pandas** e gerar os gráficos da Semana 1.
 
-## Código completo
+## Como usar no Colab
+
+1. Abra [colab.research.google.com](https://colab.research.google.com/) e crie um **Novo notebook**.
+2. Renomeie para `semana-01`.
+3. Copie cada célula abaixo na ordem.
+
+## Célula 1 - Importar e subir o arquivo
 
 ```python
-#!/usr/bin/env python3
-"""Leitor de telemetria - calcula estatisticas e gera grafico."""
-
-import sys
-from pathlib import Path
-
 import pandas as pd
+import matplotlib.pyplot as plt
 
-# Ordem dos campos no pacote #51,... (veja a Semana 1)
+from google.colab import files
+
 COLUNAS = [
     "ID", "millis", "pckt", "alt", "temp", "humi", "press",
     "gx", "gy", "gz", "ax", "ay", "az", "vz", "maxalt", "state",
     "hora", "data", "gps_alt", "lat", "lon", "sat", "pqd", "rssi",
 ]
 
-
-def ler_csv(caminho: str) -> pd.DataFrame:
-    """Le o CSV (sem cabecalho) e limpa o ID."""
-    df = pd.read_csv(caminho, header=None, names=COLUNAS)
-    df["ID"] = df["ID"].astype(str).str.lstrip("#").astype(int)
-    return df
-
-
-def calcular_estatisticas(df: pd.DataFrame, campo: str) -> dict:
-    """Calcula media, max e min de um campo numerico."""
-    serie = pd.to_numeric(df[campo], errors="coerce").dropna()
-    return {
-        "campo": campo,
-        "media": serie.mean(),
-        "max": serie.max(),
-        "min": serie.min(),
-        "amostras": len(serie),
-    }
-
-
-def salvar_resumo(estats: list[dict], caminho: str = "resumo.txt") -> None:
-    """Salva estatisticas em arquivo."""
-    with open(caminho, "w") as f:
-        for e in estats:
-            f.write(
-                f"{e['campo']}: media={e['media']:.2f}, "
-                f"max={e['max']:.2f}, min={e['min']:.2f}, "
-                f"amostras={e['amostras']}\n"
-            )
-    print(f"Resumo salvo em {caminho}")
-
-
-def main() -> None:
-    if len(sys.argv) < 2:
-        print("Uso: python exemplo.py <arquivo.csv>")
-        sys.exit(1)
-
-    caminho = sys.argv[1]
-    if not Path(caminho).exists():
-        print(f"Erro: arquivo {caminho} nao encontrado")
-        sys.exit(1)
-
-    df = ler_csv(caminho)
-    print(f"Amostras: {len(df)}")
-
-    campos = ["alt", "temp", "press"]
-    estats = [calcular_estatisticas(df, c) for c in campos]
-
-    for e in estats:
-        print(f"{e['campo']}: media={e['media']:.2f}, "
-              f"max={e['max']:.2f}, min={e['min']:.2f}")
-
-    salvar_resumo(estats)
-
-    # Grafico (opcional)
-    try:
-        import matplotlib.pyplot as plt
-
-        tempo_s = (df["millis"] - df["millis"].min()) / 1000
-        plt.plot(tempo_s, df["alt"])
-        plt.xlabel("Tempo (s)")
-        plt.ylabel("Altitude (m)")
-        plt.title("Perfil de Voo")
-        plt.grid(True)
-        plt.savefig("perfil_voo.png")
-        print("Grafico salvo em perfil_voo.png")
-    except ImportError:
-        print("matplotlib nao instalado - grafico ignorado")
-
-
-if __name__ == "__main__":
-    main()
+# Abre o seletor de arquivos - escolha o cleaned.csv
+enviados = files.upload()
 ```
 
-## Como testar
+## Célula 2 - Ler e tratar com pandas
 
-```bash
-# 1. Salve o código acima como exemplo.py na sua pasta da Semana 1
-# 2. Instale as dependências:
-pip install pandas matplotlib
+```python
+# Lê o CSV sem cabeçalho e aplica os nomes das colunas
+df = pd.read_csv("cleaned.csv", header=None, names=COLUNAS)
 
-# 3. Rode apontando para o dataset compartilhado (a partir da raiz do repo):
-python exemplo.py entregas/dados/semana-01/cleaned.csv
+# Remove o '#' do ID (ex.: '#51' -> 51)
+df["ID"] = df["ID"].astype(str).str.lstrip("#").astype(int)
 
-# 4. Saída esperada:
-# Amostras: 38
-# alt: media=257.57, max=359.42, min=39.53
-# temp: media=42.29, max=42.34, min=42.23
-# press: media=932.83, max=957.29, min=921.51
-# Resumo salvo em resumo.txt
+# Garante que os campos numéricos estejam como número
+for coluna in COLUNAS[1:]:
+    df[coluna] = pd.to_numeric(df[coluna], errors="coerce")
+
+# Cria uma coluna de tempo em segundos
+df["tempo_s"] = (df["millis"] - df["millis"].min()) / 1000
+
+df.head()
 ```
+
+## Célula 3 - Explorar os dados
+
+```python
+print("Formato:", df.shape)
+df.dtypes
+```
+
+```python
+df.describe()
+```
+
+## Célula 4 - Estatísticas de altitude
+
+```python
+alt = df["alt"]
+print(f"Amostras:        {alt.count()}")
+print(f"Altitude media:  {alt.mean():.2f} m")
+print(f"Altitude max:    {alt.max():.2f} m")
+print(f"Altitude min:    {alt.min():.2f} m")
+print(f"Duracao:         {df['tempo_s'].max():.2f} s")
+```
+
+Saída esperada:
+
+```
+Amostras:        38
+Altitude media:  257.57 m
+Altitude max:    359.42 m
+Altitude min:    39.53 m
+Duracao:         15.98 s
+```
+
+## Célula 5 - Gráfico de aceleração × tempo
+
+```python
+plt.figure(figsize=(10, 5))
+plt.plot(df["tempo_s"], df["ax"], label="ax")
+plt.plot(df["tempo_s"], df["ay"], label="ay")
+plt.plot(df["tempo_s"], df["az"], label="az")
+plt.title("Aceleração x Tempo")
+plt.xlabel("Tempo (s)")
+plt.ylabel("Aceleração")
+plt.grid(True, alpha=0.3)
+plt.legend()
+plt.show()
+```
+
+## Célula 6 - Gráfico de velocidade e altitude
+
+```python
+fig, ax1 = plt.subplots(figsize=(10, 5))
+
+ax1.plot(df["tempo_s"], df["alt"], color="#ff6b35", label="Altitude (m)")
+ax1.set_xlabel("Tempo (s)")
+ax1.set_ylabel("Altitude (m)", color="#ff6b35")
+
+ax2 = ax1.twinx()
+ax2.plot(df["tempo_s"], df["vz"], color="#2ea043", label="Velocidade (vz)")
+ax2.set_ylabel("Velocidade (vz)", color="#2ea043")
+
+ax1.grid(True, alpha=0.3)
+plt.title("Altitude e Velocidade x Tempo")
+plt.show()
+```
+
+## Compartilhar
+
+No Colab: **Compartilhar** → **Qualquer pessoa com o link** → **Copiar link**.
+Cole o link em `entregas/<seu-nome-sobrenome>/semana-01/README.md`.
+
+## Notas
+
+- O Colab já vem com `pandas` e `matplotlib` - não precisa instalar.
+- Se preferir subir o arquivo pela barra lateral: ícone de pasta → **Upload** → selecione `cleaned.csv` (funciona igual).

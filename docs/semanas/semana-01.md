@@ -1,22 +1,37 @@
-# Semana 1 - Python básico
+# Semana 1 - Python básico (Google Colab)
 
 ## Objetivo
 
-Ler o CSV de telemetria de um voo, calcular estatísticas e salvar um resumo.
+Analisar o CSV de telemetria de um voo no Google Colab, usando `pandas`, e gerar gráficos de aceleração, velocidade e altitude.
 
 ## Preparação
 
-- [ ] Python 3.10+ instalado
-- [ ] `pandas` instalado (`pip install pandas`) - permitido nesta e nas próximas semanas
+- [ ] Ter uma conta Google
+- [ ] Abrir o [Google Colab](https://colab.research.google.com/) e entrar com a conta Google
+- [ ] Baixar o arquivo de dados: `entregas/dados/semana-01/cleaned.csv`
 - [ ] Ler a [Trilha Python](../trilhas/python.md) (seções 1.1 e 2.1)
-- [ ] Ver o [Slide deck](../slides/semana-01.html)
-- [ ] Fazer o [Quiz](../quiz/semana-01.html)
+
+## Passo a passo no Colab
+
+1. Acesse **[https://colab.research.google.com/](https://colab.research.google.com/)** e entre com a sua conta Google.
+2. Clique em **Novo notebook**.
+3. Renomeie o notebook para **`semana-01`** (clique no título no topo).
+4. Importe o arquivo `cleaned.csv` para o Colab:
+   - Clique no ícone de **pasta** (arquivos) na barra lateral → **Upload** → selecione o `cleaned.csv` (baixado do repositório), **ou**
+   - Rode em uma célula:
+     ```python
+     from google.colab import files
+     files.upload()  # selecione o cleaned.csv
+     ```
+5. Faça a análise (pandas + gráficos) nas células abaixo.
+6. No final, clique em **Compartilhar** → **Qualquer pessoa com o link** → **Copiar link**.
+7. Cole o link no arquivo `entregas/<seu-nome-sobrenome>/semana-01/README.md` (veja a entrega).
+
+> O Colab já vem com `pandas` e `matplotlib` instalados - não precisa instalar nada.
 
 ## Dataset
 
-Os dados estão em `entregas/dados/semana-01/cleaned.csv`. Cada linha é um pacote de telemetria que o foguete enviou pela serial.
-
-O arquivo **não tem cabeçalho** e cada linha começa com o prefixo `#51` (o `ID` do pacote). São 24 campos separados por vírgula, nesta ordem:
+O arquivo `cleaned.csv` **não tem cabeçalho** e cada linha começa com o prefixo `#51` (o `ID` do pacote). São 24 campos separados por vírgula, nesta ordem:
 
 | # | campo | descrição |
 |---|---|---|
@@ -51,65 +66,54 @@ Exemplo de linha:
 #51,2003976,34647,39.53,42.34,0.00,957.29,1.87,0.26,-0.34,-39.20,-0.82,2.53,0.00,39.53,2,0,2000,487.80,-21.942293,-48.951912,12,0,-121
 ```
 
-## Problema
+## Tarefas
 
-Seu script deve:
+1. **Ler e tratar com pandas**: carregue o `cleaned.csv` com `pd.read_csv("cleaned.csv", header=None, names=COLUNAS)`, remova o `#` da coluna `ID` e garanta que os campos numéricos estejam como número.
+2. **Explorar os dados**: mostre as primeiras linhas (`df.head()`), os tipos (`df.dtypes`) e um resumo (`df.describe()`).
+3. **Estatísticas de `alt`**: média, máximo, mínimo e número de amostras.
+4. **Gráfico de aceleração × tempo**: plote `ax`, `ay` e `az` contra o tempo (`millis`) no mesmo gráfico.
+5. **Gráfico de velocidade e altitude**: plote `vz` (velocidade vertical) e `alt` (altitude) ao longo do tempo.
+6. **Compartilhar**: gere o link público do notebook e coloque no README da semana.
 
-1. Ler o arquivo `cleaned.csv` e transformá-lo em uma tabela (dica: `pandas` com `header=None` e os nomes das colunas acima)
-2. Limpar o campo `ID`, removendo o `#` (vira `51`)
-3. Calcular para o campo `alt`: média, máximo, mínimo e número de amostras
-4. Exibir na tela de forma legível
-5. Salvar o resumo em um arquivo `.txt`
+## Entrega
 
-## Requisitos
-
-- **Pode usar `pandas`** (recomendado) ou a biblioteca padrão (`csv`)
-- O caminho do CSV deve ser recebido como argumento (`sys.argv`)
-- Trate arquivo inexistente com mensagem de erro amigável
-- Trate CSV vazio (0 linhas) sem quebrar
-
-## Formato de saída
-
-```
-Arquivo: cleaned.csv
-Amostras: 38
-Altitude media: 257.57 m
-Altitude max:   359.42 m
-Altitude min:   39.53 m
-Duracao:        15.98 s
-```
+- O link do notebook do Colab, no formato `https://colab.research.google.com/drive/...`, **público** ("Qualquer pessoa com o link pode visualizar").
+- Cole o link em `entregas/<seu-nome-sobrenome>/semana-01/README.md`, junto com uma frase do que você fez.
+- (Opcional) Baixe o notebook (`Arquivo → Fazer download → .ipynb`) e salve também na pasta da semana.
 
 ## Dicas
 
-- `pandas.read_csv(caminho, header=None, names=COLUNAS)` lê um CSV sem cabeçalho
+- `pd.read_csv("cleaned.csv", header=None, names=COLUNAS)` lê um CSV sem cabeçalho
 - Remova o `#` do ID com `df["ID"].str.lstrip("#")`
-- Se um campo vier com texto, `pd.to_numeric(..., errors="coerce")` gera `NaN` - decida como tratar
-- `sys.argv[1]` pega o primeiro argumento depois do nome do script
-- `pathlib.Path.exists()` verifica se o arquivo existe
-- Duração: `(df["millis"].max() - df["millis"].min()) / 1000`
+- Converta colunas com `pd.to_numeric(df[campo], errors="coerce")`
+- Crie uma coluna de tempo em segundos: `df["tempo_s"] = (df["millis"] - df["millis"].min()) / 1000`
+- Gráficos com pandas: `df.plot(x="tempo_s", y=["ax", "ay", "az"])`
+- Todos os passos em uma célula do Colab aparecem no notebook - comente o que cada parte faz
 
 ## Extra (opcional)
 
-- Gere um gráfico de `alt` × tempo (`millis`) com `matplotlib` e salve como PNG
-- Adicione mais campos ao resumo: `temp`, `press`, `rssi`
-- Compare quantas amostras você tem com o intervalo de `pckt` (pacotes podem ter se perdido na transmissão)
+- Calcule a norma da aceleração: `(df["ax"]**2 + df["ay"]**2 + df["az"]**2) ** 0.5`
+- Adicione um gráfico de `temp` e `press`
+- Marque no gráfico de altitude o instante de `maxalt`
 
 ## Critérios de aceite
 
-- [ ] Script roda com `python3 leitor.py ../../dados/semana-01/cleaned.csv` sem erros
-- [ ] Estatísticas corretas de `alt` (confira na mão com 3 linhas)
-- [ ] Resumo salvo em `.txt`
-- [ ] Commit com tipo semântico
+- [ ] Notebook `semana-01` criado no Colab
+- [ ] CSV carregado e tratado com pandas
+- [ ] Gráfico de aceleração (`ax`, `ay`, `az`) ao longo do tempo
+- [ ] Gráfico de velocidade (`vz`) e altitude (`alt`)
+- [ ] Link do Colab público colado no `README.md` da semana
 
 ## Perguntas para reflexão
 
 - O que acontece se uma linha tiver um campo não numérico?
 - Por que ler com `header=None`? O que muda se você não passar os nomes das colunas?
-- `with open(...) as f`: o que o `with` garante?
+- O que a aceleração e a velocidade dizem sobre a fase do voo?
 
 ## Referências
 
+- [Google Colab](https://colab.research.google.com/)
+- [Exemplo Python (Colab)](../examples/python-exemplo.md)
 - [Trilha Python](../trilhas/python.md)
-- [Exemplo Python](../examples/python-exemplo.md)
 - [Slide deck](../slides/semana-01.html)
 - [Quiz](../quiz/semana-01.html)

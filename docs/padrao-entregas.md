@@ -44,7 +44,7 @@ entregas/
 | Semana | Pasta | Conteúdo mínimo |
 |---|---|---|
 | 0 | `semana-00/` | `README.md` + `hello.py` |
-| 1 | `semana-01/` | `README.md` + leitor/análise do CSV + resumo |
+| 1 | `semana-01/` | `README.md` com o link do notebook Colab (pandas + gráficos) |
 | 2 | `semana-02/` | `README.md` + parser + validador |
 | 3 | `semana-03/` | `README.md` + sketch Arduino |
 | 4 | `semana-04/` | `README.md` + projeto PlatformIO + testes |

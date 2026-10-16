@@ -28,16 +28,17 @@ Extra (opcional):
 
 ## Semana 1 - Python básico (telemetria)
 
-Objetivo: Processar dados de telemetria em CSV.
+Objetivo: Processar dados de telemetria em CSV no Google Colab.
 
 Trilha principal: [Python](trilhas/python.md)
 
 Entregas (issues):
-- Script lê CSV de telemetria e imprime estatísticas
-- Salvar resumo em arquivo
+- Notebook `semana-01` no Colab com o CSV tratado em pandas
+- Gráficos de aceleração, velocidade e altitude
+- Link público do Colab
 
 Extra (opcional):
-- Gráfico simples (matplotlib)
+- Norma da aceleração e gráficos de temperatura/pressão
 
 Conexão com projetos reais: Análise pós-voo do Flight Computer e Helike.
 

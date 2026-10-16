@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Semana 01 — Python Básico</title>
+  <title>Semana 01 — Python Básico (Colab)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.min.css">
   <style>
@@ -28,166 +28,132 @@
 
       <section>
         <h1>Semana 01</h1>
-        <h2>Python Básico</h2>
-        <p class="subtitle">Análise de telemetria com Python e pandas</p>
+        <h2>Python Básico no Colab</h2>
+        <p class="subtitle">Análise de telemetria com pandas, no navegador</p>
       </section>
 
       <section>
         <h2>Objetivos de Aprendizado</h2>
         <ul>
-          <li>Ler o CSV real de telemetria do voo</li>
-          <li>Parsear as linhas com <code>pandas</code> (ou <code>csv</code> padrão)</li>
-          <li>Calcular estatísticas básicas (média, max, min)</li>
-          <li>Salvar resumo em arquivo de texto</li>
-          <li>Criar gráficos simples com matplotlib</li>
+          <li>Usar o Google Colab para analisar dados</li>
+          <li>Importar um CSV e tratá-lo com <code>pandas</code></li>
+          <li>Calcular estatísticas e gerar gráficos</li>
+          <li>Compartilhar um notebook público</li>
         </ul>
+      </section>
+
+      <section>
+        <h2>Por que o Colab?</h2>
+        <ul>
+          <li>Roda no navegador - nada para instalar</li>
+          <li>Já vem com <code>pandas</code>, <code>matplotlib</code> e Python</li>
+          <li>Notebook salvo na sua conta Google</li>
+          <li>Fácil de compartilhar o link para revisão</li>
+        </ul>
+        <p class="objective">Acesse: <strong>colab.research.google.com</strong></p>
+      </section>
+
+      <section>
+        <h2>Passo a Passo</h2>
+        <ol>
+          <li>Abra <code>colab.research.google.com</code> e entre com a conta Google</li>
+          <li>Clique em <strong>Novo notebook</strong></li>
+          <li>Renomeie o notebook para <strong><code>semana-01</code></strong></li>
+          <li>Importe o <code>cleaned.csv</code> (ícone de pasta &rarr; Upload)</li>
+          <li>Faça a análise nas células</li>
+          <li>Compartilhe o link (Qualquer pessoa com o link)</li>
+        </ol>
       </section>
 
       <section>
         <h2>O Dataset</h2>
-        <p>Arquivo <code>entregas/dados/semana-01/cleaned.csv</code> - cada linha é um pacote enviado pela serial.</p>
-        <ul>
-          <li><strong>Não tem cabeçalho</strong> (primeira linha já é dado)</li>
-          <li>Cada linha começa com o prefixo <code>#51</code> (o ID do pacote)</li>
-          <li>24 campos separados por vírgula</li>
-        </ul>
-        <pre><code class="language-text">#51,2003976,34647,39.53,42.34,0.00,957.29,1.87,0.26,-0.34,-39.20,-0.82,2.53,0.00,39.53,2,0,2000,487.80,-21.942293,-48.951912,12,0,-121</code></pre>
-      </section>
-
-      <section>
-        <h2>Os 24 Campos</h2>
+        <p><code>entregas/dados/semana-01/cleaned.csv</code> - sem cabeçalho, cada linha começa com <code>#51</code> e tem 24 campos:</p>
         <pre><code class="language-text">ID, millis, pckt, alt, temp, humi, press,
 gx, gy, gz, ax, ay, az, vz, maxalt, state,
 hora, data, gps_alt, lat, lon, sat, pqd, rssi</code></pre>
-        <ul>
-          <li><code>alt</code> - altitude (m) &nbsp;·&nbsp; <code>temp</code> - temperatura (°C)</li>
-          <li><code>press</code> - pressão (hPa) &nbsp;·&nbsp; <code>lat</code>/<code>lon</code> - GPS</li>
-          <li><code>millis</code> - tempo em ms &nbsp;·&nbsp; <code>rssi</code> - sinal recebido (dBm)</li>
-        </ul>
+        <p class="objective"><code>alt</code> altitude · <code>vz</code> velocidade vertical · <code>ax/ay/az</code> aceleração</p>
       </section>
 
       <section>
-        <h2>Lendo com pandas</h2>
-        <p>Como o arquivo não tem cabeçalho, passamos os nomes das colunas:</p>
+        <h2>Tratamento com pandas</h2>
         <pre><code class="language-python">import pandas as pd
+from google.colab import files
+files.upload()   # suba o cleaned.csv
 
-COLUNAS = [
-    "ID", "millis", "pckt", "alt", "temp", "humi", "press",
-    "gx", "gy", "gz", "ax", "ay", "az", "vz", "maxalt", "state",
-    "hora", "data", "gps_alt", "lat", "lon", "sat", "pqd", "rssi",
-]
+COLUNAS = ["ID","millis","pckt","alt","temp","humi","press",
+           "gx","gy","gz","ax","ay","az","vz","maxalt","state",
+           "hora","data","gps_alt","lat","lon","sat","pqd","rssi"]
 
-def ler_csv(caminho):
-    df = pd.read_csv(caminho, header=None, names=COLUNAS)
-    df["ID"] = df["ID"].astype(str).str.lstrip("#").astype(int)
-    return df</code></pre>
-        <p class="objective">O <code>#</code> do ID é removido para virar número.</p>
+df = pd.read_csv("cleaned.csv", header=None, names=COLUNAS)
+df["ID"] = df["ID"].astype(str).str.lstrip("#").astype(int)
+
+for coluna in COLUNAS[1:]:
+    df[coluna] = pd.to_numeric(df[coluna], errors="coerce")
+
+df["tempo_s"] = (df["millis"] - df["millis"].min()) / 1000</code></pre>
       </section>
 
       <section>
-        <h2>Alternativa: csv padrão</h2>
-        <pre><code class="language-python">import csv
+        <h2>Explorar e Estatísticas</h2>
+        <pre><code class="language-python">df.head()
+df.describe()
 
-def ler_csv(caminho):
-    linhas = []
-    with open(caminho) as f:
-        for linha in csv.reader(f):
-            linha[0] = linha[0].lstrip("#")   # tira o # do ID
-            linhas.append([float(v) for v in linha])
-    return linhas</code></pre>
-        <p class="objective">Sem cabeçalho, então usamos <code>csv.reader</code>, não <code>DictReader</code>.</p>
+alt = df["alt"]
+print(f"Amostras:       {alt.count()}")
+print(f"Altitude media: {alt.mean():.2f} m")
+print(f"Altitude max:   {alt.max():.2f} m")
+print(f"Altitude min:   {alt.min():.2f} m")</code></pre>
+        <p class="objective">Saída: 38 amostras, média 257.57, max 359.42, min 39.53.</p>
       </section>
 
       <section>
-        <h2>Calculando Estatísticas</h2>
-        <pre><code class="language-python">def calcular_estatisticas(df, campo):
-    serie = pd.to_numeric(df[campo], errors="coerce").dropna()
-    return {
-        "media": serie.mean(),
-        "maximo": serie.max(),
-        "minimo": serie.min(),
-        "amostras": len(serie),
-    }
-
-stats = calcular_estatisticas(df, "alt")
-print(f"Altitude media: {stats['media']:.2f} m")
-print(f"Max: {stats['maximo']:.2f} m")
-print(f"Min: {stats['minimo']:.2f} m")</code></pre>
-        <p class="objective">Sempre valide se a série não está vazia antes de usar a média!</p>
-      </section>
-
-      <section>
-        <h2>Salvando Resumo em Arquivo</h2>
-        <pre><code class="language-python">def salvar_resumo(estats, nome_arquivo="resumo.txt"):
-    with open(nome_arquivo, "w") as f:
-        f.write("=== RESUMO DE TELEMETRIA ===\n\n")
-        for e in estats:
-            f.write(f"{e['campo']}:\n")
-            f.write(f"  Media:    {e['media']:.2f}\n")
-            f.write(f"  Max:      {e['maximo']:.2f}\n")
-            f.write(f"  Min:      {e['minimo']:.2f}\n")
-            f.write(f"  Amostras: {e['amostras']}\n\n")
-    print(f"Resumo salvo em {nome_arquivo}")</code></pre>
-      </section>
-
-      <section>
-        <h2>matplotlib — Primeiro Gráfico</h2>
+        <h2>Gráfico de Aceleração × Tempo</h2>
         <pre><code class="language-python">import matplotlib.pyplot as plt
 
-def plotar_altitude(df):
-    tempo_s = (df["millis"] - df["millis"].min()) / 1000
-    plt.figure(figsize=(10, 5))
-    plt.plot(tempo_s, df["alt"], color="#ff6b35", linewidth=2)
-    plt.title("Altitude vs Tempo")
-    plt.xlabel("Tempo (s)")
-    plt.ylabel("Altitude (m)")
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig("altitude.png", dpi=150)
-    plt.show()</code></pre>
+plt.figure(figsize=(10, 5))
+plt.plot(df["tempo_s"], df["ax"], label="ax")
+plt.plot(df["tempo_s"], df["ay"], label="ay")
+plt.plot(df["tempo_s"], df["az"], label="az")
+plt.title("Aceleração x Tempo")
+plt.xlabel("Tempo (s)")
+plt.ylabel("Aceleração")
+plt.grid(True, alpha=0.3)
+plt.legend()
+plt.show()</code></pre>
       </section>
 
       <section>
-        <h2>Tratamento de Erros</h2>
-        <p>Sempre considere que o arquivo pode estar ausente:</p>
-        <pre><code class="language-python">from pathlib import Path
-import sys
+        <h2>Gráfico de Velocidade e Altitude</h2>
+        <pre><code class="language-python">fig, ax1 = plt.subplots(figsize=(10, 5))
+ax1.plot(df["tempo_s"], df["alt"], color="#ff6b35")
+ax1.set_xlabel("Tempo (s)")
+ax1.set_ylabel("Altitude (m)", color="#ff6b35")
 
-def main():
-    if len(sys.argv) &lt; 2:
-        print("Uso: python leitor.py &lt;arquivo.csv&gt;")
-        return
+ax2 = ax1.twinx()
+ax2.plot(df["tempo_s"], df["vz"], color="#2ea043")
+ax2.set_ylabel("Velocidade (vz)", color="#2ea043")
 
-    caminho = sys.argv[1]
-    if not Path(caminho).exists():
-        print(f"Erro: arquivo {caminho} nao encontrado")
-        return
-
-    df = ler_csv(caminho)
-    if df.empty:
-        print("CSV vazio - nada a analisar")
-        return</code></pre>
+plt.title("Altitude e Velocidade x Tempo")
+plt.show()</code></pre>
       </section>
 
       <section>
-        <h2>Saída Esperada</h2>
-        <pre><code class="language-text">Arquivo: cleaned.csv
-Amostras: 38
-Altitude media: 257.57 m
-Altitude max:   359.42 m
-Altitude min:   39.53 m
-Duracao:        15.98 s</code></pre>
-        <p class="objective">Duração = (millis máximo - millis mínimo) / 1000.</p>
+        <h2>Entrega: Link do Colab</h2>
+        <pre><code class="language-python"># No Colab: Compartilhar -> Qualquer pessoa com o link -> Copiar link
+# Ex.: https://colab.research.google.com/drive/xxxxxxxx</code></pre>
+        <p>Cole o link em <code>entregas/&lt;nome&gt;/semana-01/README.md</code>.</p>
+        <p class="objective">Sem o link público, não é possível revisar.</p>
       </section>
 
       <section>
         <h2>Exercícios</h2>
         <ol>
-          <li>Ler <code>cleaned.csv</code> e limpar o ID</li>
-          <li>Calcular média, max, min e amostras de <code>alt</code></li>
-          <li>Salvar o resumo em <code>resumo.txt</code></li>
-          <li>Gerar o gráfico de altitude × tempo</li>
-          <li>(Extra) Repetir as estatísticas para <code>temp</code> e <code>press</code></li>
+          <li>Criar o notebook <code>semana-01</code> e importar o CSV</li>
+          <li>Tratar os dados com pandas (limpar ID, converter tipos)</li>
+          <li>Calcular as estatísticas de <code>alt</code></li>
+          <li>Gráfico de aceleração (<code>ax</code>, <code>ay</code>, <code>az</code>) × tempo</li>
+          <li>Gráfico de velocidade (<code>vz</code>) e altitude (<code>alt</code>)</li>
+          <li>Compartilhar o link e colar no README da semana</li>
         </ol>
         <p class="objective">Entregar via PR até domingo.</p>
       </section>
@@ -195,12 +161,11 @@ Duracao:        15.98 s</code></pre>
       <section>
         <h2>Resumo &amp; Conclusão</h2>
         <ul>
-          <li>CSV real lido e parseado (com ou sem pandas)</li>
-          <li>Estatísticas calculadas para <code>alt</code></li>
-          <li>Resumo salvo em arquivo de texto</li>
-          <li>Gráficos gerados com matplotlib</li>
+          <li>Notebook criado no Colab e CSV importado</li>
+          <li>Tratamento completo com pandas</li>
+          <li>Gráficos de aceleração, velocidade e altitude</li>
+          <li>Link público para revisão</li>
         </ul>
-        <p>Python é a base de toda a análise de telemetria.</p>
         <p class="subtitle">Próximo passo: Semana 02 — Python aplicado</p>
       </section>
 

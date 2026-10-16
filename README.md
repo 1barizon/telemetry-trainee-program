@@ -30,7 +30,7 @@ Repositório de treinamento do time de telemetria, com trilhas, semanas e entreg
 | Semana | Tema | Entregas |
 |--------|------|----------|
 | 0 | Setup & GitHub | PR "hello world" |
-| 1 | Python básico | CSV + estatísticas |
+| 1 | Python básico (Colab) | pandas + gráficos |
 | 2 | Python aplicado | Parser + validação |
 | 3 | Arduino IDE | Blink + sensor + serial |
 | 4 | PlatformIO | Migração + testes |
