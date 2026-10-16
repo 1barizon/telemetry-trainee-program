@@ -2,17 +2,18 @@
 
 ## Objetivo
 
-Ler CSV de telemetria e gerar resumo.
+Ler o CSV de telemetria (`entregas/dados/semana-01/cleaned.csv`) e gerar um resumo.
 
 ## Tarefas
 
-- [ ] Ler arquivo CSV
-- [ ] Calcular estatisticas simples
+- [ ] Ler o CSV com `pandas` (pode usar)
+- [ ] Calcular estatisticas de `alt` (media, max, min, amostras)
 - [ ] Salvar resumo em arquivo
+- [ ] Grafico de altitude x tempo (opcional)
 
 ## Criterios de aceite
 
-- [ ] Script roda sem erros
+- [ ] Script roda sem erros com o arquivo de `entregas/dados/semana-01/`
 - [ ] Resumo legivel
 - [ ] README atualizado
 
