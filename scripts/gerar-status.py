@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SEMANAS = [f"semana-{i:02d}" for i in range(9)]
+# Pastas em entregas/ que nao sao de alunos (material compartilhado)
+NAO_ALUNOS = {"dados"}
 ROOT = Path(__file__).resolve().parent.parent
 ENTREGAS = ROOT / "entregas"
 STATUS = ROOT / "docs" / "status.md"
@@ -16,7 +18,11 @@ def descobrir_alunos() -> list[str]:
     """Retorna os nomes das pastas de alunos, em ordem alfabetica."""
     if not ENTREGAS.is_dir():
         return []
-    return sorted(pasta.name for pasta in ENTREGAS.iterdir() if pasta.is_dir())
+    return sorted(
+        pasta.name
+        for pasta in ENTREGAS.iterdir()
+        if pasta.is_dir() and pasta.name not in NAO_ALUNOS
+    )
 
 
 def semanas_entregues(aluno_dir: Path) -> set[str]:
