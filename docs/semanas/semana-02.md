@@ -38,10 +38,9 @@ Seu script deve:
 Função que recebe uma linha bruta e retorna um dicionário com os campos tipados.
 
 Regras do parser:
-- Aceitar apenas linhas que contenham um pacote que começa com `#51,`
-- Retornar `None` para as demais linhas (`[LoRa] RX`, `[STATS]`, `[MESH]`, `[LOST]`, vazias)
+- Aceitar apenas linhas que contenham um pacote que começa com `#51,` e tenha **24 campos**
+- Retornar `None` quando a linha não for um pacote completo (`[STATS]`, `[MESH]`, `[LOST]`, vazias ou `[LoRa] RX` de 22 campos)
 - Remover o `#` do campo `ID` (vira `51`)
-- Rejeitar pacotes com número de campos diferente de 24 (ex.: os de 22 campos do `[LoRa] RX`)
 - Rejeitar campos não numéricos (ex: letra onde deveria vir número)
 - Retornar `None` para linhas inválidas (não levantar exceção)
 
