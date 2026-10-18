@@ -90,4 +90,5 @@ Baseado no `config.h` do firmware (ESP32-S3):
 - [Wokwi - Custom Chips](https://docs.wokwi.com/chips-api/getting-started)
 - [Wokwi - Chip Definition (JSON)](https://docs.wokwi.com/chips-api/chip-json)
 - [Wokwi - I2C API](https://docs.wokwi.com/chips-api/i2c) · [UART API](https://docs.wokwi.com/chips-api/uart) · [Attributes](https://docs.wokwi.com/chips-api/attributes)
+- Esqueleto da semana que usa estes chips: [`docs/semanas/semana-09.md`](../../../docs/semanas/semana-09.md)
 - `hardware.md` - documentação do computador de bordo
