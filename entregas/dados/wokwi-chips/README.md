@@ -62,10 +62,10 @@ Baseado no `config.h` do firmware (ESP32-S3):
 
 ### BMP585
 
-- Pressão derivada da **altitude** (atmosfera padrão): `p = 101325 * (1 - 2.25577e-5 * h)^5.25588`
+- A **pressão** é definida diretamente por um controle (em hPa) - a conversão pressão → altitude fica para o firmware/aluno fazer depois
 - Registradores: `CHIP_ID` (0x51), `STATUS`, `INT_STATUS`, temp (0x1D-0x1F) e pressão (0x20-0x22), config (0x30/0x31/0x36/0x37/0x7E)
 - Escala: temperatura `LSB = 1/2^16 °C`; pressão `LSB = 1/2^6 Pa`
-- Controles: `altitude` (m), `temperature` (°C); atributo `address` (padrão `0x7E`)
+- Controles: `pressure` (hPa), `temperature` (°C); atributo `address` (padrão `0x7E`)
 
 ### LSM6DS3
 

@@ -1,11 +1,12 @@
 /*
  * BMP585 - Barometric pressure sensor (Wokwi custom chip)
  *
- * Simula um BMP585 (Bosch) no barramento I2C. A pressao e derivada da
- * altitude (atmosfera padrao) e a temperatura vem de um controle.
+ * Simula um BMP585 (Bosch) no barramento I2C. A pressao e definida
+ * diretamente por um controle (em hPa) e a temperatura por outro. Assim,
+ * a transformacao pressao -> altitude fica para o firmware/aluno fazer.
  *
  * Ajuste os valores pelos controles na simulacao (ou pelos attrs no
- * diagram.json): "altitude", "temperature", "address".
+ * diagram.json): "pressure", "temperature", "address".
  *
  * Registradores implementados (subconjunto do datasheet):
  *   0x01 CHIP_ID       (0x51 = BMP585)
@@ -38,22 +39,21 @@
 
 typedef struct {
   i2c_dev_t i2c;
-  uint32_t attr_altitude;
+  uint32_t attr_pressure;
   uint32_t attr_temperature;
   uint8_t regs[256];
   uint8_t reg_ptr;
   bool first_byte;
 } chip_state_t;
 
-/* Pressao (Pa) a partir da altitude (m) - atmosfera padrao internacional. */
+/* Preenche os registradores de dados a partir da pressao (hPa) e temperatura (C). */
 static void update_measurements(chip_state_t *chip) {
-  const float altitude = attr_read_float(chip->attr_altitude);
+  const float pressure_hpa = attr_read_float(chip->attr_pressure);
   const float temperature = attr_read_float(chip->attr_temperature);
-  const float pressure =
-      101325.0f * powf(1.0f - 2.25577e-5f * altitude, 5.25588f);
+  const float pressure_pa = pressure_hpa * 100.0f;
 
   const int32_t raw_t = (int32_t)lroundf(temperature * 65536.0f);
-  const int32_t raw_p = (int32_t)lroundf(pressure * 64.0f);
+  const int32_t raw_p = (int32_t)lroundf(pressure_pa * 64.0f);
 
   chip->regs[REG_TEMP_XLSB + 0] = raw_t & 0xFF;
   chip->regs[REG_TEMP_XLSB + 1] = (raw_t >> 8) & 0xFF;
@@ -92,7 +92,7 @@ static bool on_i2c_write(void *user_data, uint8_t data) {
 void chip_init(void) {
   chip_state_t *chip = calloc(1, sizeof(chip_state_t));
 
-  chip->attr_altitude = attr_init_float("altitude", 0.0f);
+  chip->attr_pressure = attr_init_float("pressure", 1013.25f);
   chip->attr_temperature = attr_init_float("temperature", 25.0f);
 
   chip->regs[REG_CHIP_ID] = 0x51;    /* BMP585 ASIC id */

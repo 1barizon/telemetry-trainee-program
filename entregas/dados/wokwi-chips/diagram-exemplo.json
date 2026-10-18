@@ -15,7 +15,7 @@
       "id": "bmp585",
       "top": -150,
       "left": 320,
-      "attrs": { "altitude": 0, "temperature": 25, "address": 126 }
+      "attrs": { "pressure": 1013.25, "temperature": 25, "address": 126 }
     },
     {
       "type": "chip-lsm6ds3",
