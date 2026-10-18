@@ -63,11 +63,15 @@ A pasta [`entregas/dados/`](../entregas/dados/) contém os arquivos de entrada d
 entregas/dados/
 ├── semana-01/
 │   └── cleaned.csv
-└── semana-02/
-    └── voo_thonyan.txt
+├── semana-02/
+│   └── voo_thonyan.txt
+└── wokwi-chips/              # custom chips (sensores) para simular no Wokwi
+    ├── bmp585/
+    ├── lsm6ds3/
+    └── neo-8m/
 ```
 
-Não edite nem apague esses arquivos - apenas leia-os nos seus scripts.
+Não edite nem apague esses arquivos - apenas leia-os nos seus scripts (ou use os chips no Wokwi).
 
 ## Rotina semanal do aluno
 

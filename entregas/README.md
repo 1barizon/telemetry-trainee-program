@@ -32,8 +32,12 @@ A pasta `dados/` contém os arquivos de entrada do treinamento, iguais para todo
 entregas/dados/
 ├── semana-01/
 │   └── cleaned.csv
-└── semana-02/
-    └── voo_thonyan.txt
+├── semana-02/
+│   └── voo_thonyan.txt
+└── wokwi-chips/              # custom chips (sensores) para simular no Wokwi
+    ├── bmp585/
+    ├── lsm6ds3/
+    └── neo-8m/
 ```
 
 O progresso de todos fica em [docs/status.md](../docs/status.md), gerado por `scripts/gerar-status.py`.
