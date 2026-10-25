@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
-SEMANAS = [f"semana-{i:02d}" for i in range(9)]
+SEMANAS = [f"semana-{i:02d}" for i in range(10)]
 # Pastas em entregas/ que nao sao de alunos (material compartilhado)
 NAO_ALUNOS = {"dados"}
 ROOT = Path(__file__).resolve().parent.parent

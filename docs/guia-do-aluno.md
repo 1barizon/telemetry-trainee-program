@@ -51,9 +51,10 @@ graph LR
     S5 --> S6[S6: KiCad]
     S6 --> S7[S7: Projetos reais]
     S7 --> S8[S8: Capstone]
+    S8 --> S9[S9: Chips no Wokwi]
     
     style S0 fill:#8b949e,color:#fff
-    style S8 fill:#ff6b35,color:#fff
+    style S9 fill:#ff6b35,color:#fff
 ```
 
 ## O que você deve entregar
@@ -64,7 +65,7 @@ graph LR
 
 ## Onde encontrar tudo
 
-- Roadmap: [roadmap-8-semanas](roadmap-8-semanas.md)
+- Roadmap: [roadmap](roadmap.md)
 - Entregas: [Padrão de Entregas](padrao-entregas.md)
 - Semanas: [Semanas do Treinamento](semanas/README.md)
 - Issues semanais: [Issues Semanais (Exemplos)](issues-semanais/README.md)

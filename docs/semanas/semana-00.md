@@ -45,7 +45,7 @@ entregas/
 
 Regras:
 - **Nunca apague o material do repositório** (docs, slides, quizzes, templates). Você só adiciona arquivos na sua pasta.
-- Uma subpasta por semana: `semana-00`, `semana-01`, ..., `semana-08`.
+- Uma subpasta por semana: `semana-00`, `semana-01`, ..., `semana-09`.
 - Cada pasta de semana precisa de um `README.md` explicando o que foi feito e como executar.
 
 Veja o [Padrão de Entregas](../padrao-entregas.md) para a estrutura completa.

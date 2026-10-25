@@ -6,7 +6,7 @@ Repositório de treinamento do time de telemetria, com trilhas, semanas e entreg
 
 - [Guia do Aluno](docs/guia-do-aluno.md)
 - [Padrão de Entregas](docs/padrao-entregas.md)
-- [Roadmap 8 semanas](docs/roadmap-8-semanas.md)
+- [Roadmap do Treinamento (9 semanas)](docs/roadmap.md)
 - [Calendario](docs/calendario.md)
 - [Pagina inicial (GitHub Pages)](docs/index.md)
 - [Mapa Geral](docs/mapa-geral.md)
@@ -38,6 +38,7 @@ Repositório de treinamento do time de telemetria, com trilhas, semanas e entreg
 | 6 | KiCad | Esquemático + ERC |
 | 7 | Projetos reais | Resumo FC + Helike |
 | 8 | Capstone | Pipeline end-to-end |
+| 9 | Chips personalizados no Wokwi | Simulação do computador de bordo |
 
 ## Padrões de entrega
 

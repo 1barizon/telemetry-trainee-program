@@ -26,14 +26,16 @@ entregas/
     │   └── evidencias/
     ├── semana-02/
     │   └── ...
-    └── semana-08/
+    ├── semana-08/
+    │   └── ...
+    └── semana-09/
         └── ...
 ```
 
 ### Regras da estrutura
 
 1. **Uma pasta por trainee**: `entregas/<seu-nome-sobrenome>/`, em minúsculas e com hífen (ex.: `maria-silva`).
-2. **Uma subpasta por semana**: `semana-00`, `semana-01`, ..., `semana-08` (sempre com dois dígitos).
+2. **Uma subpasta por semana**: `semana-00`, `semana-01`, ..., `semana-09` (sempre com dois dígitos).
 3. **`README.md` obrigatório** em cada pasta de semana, explicando o que foi feito e como executar.
 4. **Não misture semanas**: cada entrega fica apenas na pasta da semana correspondente.
 5. **Evidências** (logs, prints, saídas de scripts) vão em uma subpasta `evidencias/` dentro da semana.
@@ -52,6 +54,7 @@ entregas/
 | 6 | `semana-06/` | `README.md` + arquivos KiCad + PDF do esquemático |
 | 7 | `semana-07/` | `README.md` + resumos/mapa conceitual |
 | 8 | `semana-08/` | `README.md` + projeto final (capstone) |
+| 9 | `semana-09/` | `README.md` + `sketch.ino` + `log_wokwi.txt` + `parser.py` + `dados_tratados.csv` |
 
 > Os detalhes exatos de cada entrega estão na semana correspondente em [`docs/semanas/`](semanas/) e na issue semanal.
 

@@ -13,4 +13,4 @@ Roteiros semanais com objetivos, entregas e criterios de aceite.
 - [Semana 6](semana-06.md)
 - [Semana 7](semana-07.md)
 - [Semana 8](semana-08.md)
-- [Semana 9 (extra) - Simulação do computador de bordo no Wokwi](semana-09.md) _(futura - esqueleto)_
+- [Semana 9](semana-09.md) - Chips personalizados no Wokwi

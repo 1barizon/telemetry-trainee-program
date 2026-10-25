@@ -9,7 +9,7 @@ Padronizar organização e facilitar o onboarding dos novos membros.
 ```
 treinamento-telemetria/
 ├── docs/
-│   ├── roadmap-8-semanas.md
+│   ├── roadmap.md
 │   ├── estrutura-repo.md
 │   ├── calendario.md
 │   ├── index.md
@@ -27,7 +27,7 @@ treinamento-telemetria/
 │   │   ├── semana-00.md
 │   │   ├── semana-01.md
 │   │   ├── ...
-│   │   └── semana-08.md
+│   │   └── semana-09.md
 │   ├── trilhas/
 │   │   ├── README.md
 │   │   ├── python.md

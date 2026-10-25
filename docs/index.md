@@ -5,7 +5,7 @@ Bem-vindo ao treinamento do time de telemetria e controle da Serra Rocketry.
 ## Comece aqui
 
 - [Guia do Aluno](guia-do-aluno.md)
-- [Roadmap 8 semanas](roadmap-8-semanas.md)
+- [Roadmap do Treinamento (9 semanas)](roadmap.md)
 - [Diagrama das Semanas](diagrama-semanas.html)
 - [Calendário](calendario.md)
 - [Visão Geral](visao-geral.md)
@@ -19,7 +19,7 @@ Bem-vindo ao treinamento do time de telemetria e controle da Serra Rocketry.
 
 - [Trilhas de Conteúdo](trilhas/README.md) - Python, Arduino, PlatformIO, KiCad, GitHub
 - [Semanas do Treinamento](semanas/README.md) - roteiros semanais com entregas
-- [Slide Decks](slides/README.md) - apresentações para cada semana
+- [Slide Decks](slides/index.md) - apresentações para cada semana
 - [Quiz Interativo](quiz/README.md) - autoavaliação
 - [Issues Semanais (Exemplos)](issues-semanais/README.md)
 - [Exemplos Mínimos](examples/README.md)

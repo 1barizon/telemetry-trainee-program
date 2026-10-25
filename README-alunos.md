@@ -6,7 +6,7 @@ Bem-vindo ao treinamento do time de telemetria da Serra Rocketry.
 
 1. Faça fork do repositorio e clone o seu fork
 2. Leia o [Guia do Aluno](docs/guia-do-aluno.md)
-3. Veja o [Roadmap 8 semanas](docs/roadmap-8-semanas.md)
+3. Veja o [Roadmap do Treinamento (9 semanas)](docs/roadmap.md)
 4. Siga a semana atual em [Semanas](docs/semanas/README.md)
 5. Entregue dentro de `entregas/nome-sobrenome/semana-XX/` (veja o [Padrão de Entregas](docs/padrao-entregas.md))
 

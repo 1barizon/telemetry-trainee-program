@@ -174,6 +174,27 @@ Avaliação:
 | Documentação | 20% |
 | Organização | 15% |
 
+## Semana 9 - Chips personalizados no Wokwi
+
+Mini-aula:
+- O que é um custom chip do Wokwi (`chip.json` + `chip.c`, Chips API)
+- Como adicionar um custom chip ao projeto e conferir o Chips Console
+- I2C por registradores (`Wire`) versus bibliotecas de sensor
+- UART e sentenças NMEA do GPS
+- Conversão pressão → altitude e o pacote de 16 campos
+
+Perguntas para discussão:
+- Por que simular os sensores antes de montar a placa?
+- Por que o chip simulado não funciona com a biblioteca do fabricante?
+- O que acontece nos pacotes entre duas atualizações do GPS?
+- Como validar que o firmware não está perdendo amostras?
+
+Na revisão:
+- Projeto montado do zero com os três chips e link compartilhado?
+- Pacotes a 10 Hz no formato de 16 campos?
+- Log com 5+ minutos e parser gerando `dados_tratados.csv`?
+- Gráficos no Colab e README com os links?
+
 ## Checklist rápido do revisor
 
 - [ ] PR vem de um fork (da `main` do trainee)

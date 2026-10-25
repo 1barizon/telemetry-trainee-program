@@ -252,4 +252,5 @@ Semana 5: [⬜] Integração
 Semana 6: [⬜] KiCad
 Semana 7: [⬜] Projetos reais
 Semana 8: [⬜] Capstone
+Semana 9: [⬜] Chips no Wokwi
 ```
