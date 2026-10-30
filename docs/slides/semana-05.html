@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Semana 05 — Integração Arduino ↔ Python</title>
+  <title>Semana 05 — PlatformIO</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.min.css">
   <style>
@@ -28,303 +28,291 @@
 
       <section>
         <h1>Semana 05</h1>
-        <h2>Integração Arduino ↔ Python</h2>
-        <p class="subtitle">Firmware coleta dados, Python processa em tempo real</p>
+        <h2>PlatformIO</h2>
+        <p class="subtitle">Build system profissional para firmware embarcado</p>
       </section>
 
       <section>
         <h2>Objetivos de Aprendizado</h2>
         <ul>
-          <li>Arduino enviando pacotes de telemetria a 20 Hz</li>
-          <li>Python lendo da porta serial em tempo real</li>
-          <li>Parsing e validação contínua dos pacotes</li>
-          <li>Salvando log CSV com timestamp Unix</li>
+          <li>Entender por que PlatformIO é superior ao Arduino IDE</li>
+          <li>Estruturar projeto com src/, lib/, test/</li>
+          <li>Configurar platformio.ini multi-ambiente</li>
+          <li>Gerenciar dependências com lib_deps</li>
+          <li>Escrever e rodar testes nativos com Unity</li>
         </ul>
       </section>
 
       <section>
-        <h2>Arquitetura do Sistema</h2>
-        <pre><code class="language-text">┌─────────────────────┐       Serial (USB)       ┌─────────────────────┐
-│   Arduino / Teensy  │ ════════════════════════> │   Python (PC/RPi)   │
-│                     │   $T,100,25.3,101325*3F   │                     │
-│  - Le sensores      │   $T,150,25.4,101300*2D   │  - Parse pacotes    │
-│  - Envia a 20 Hz    │   $T,200,25.2,101280*1B   │  - Valida dados     │
-│  - Checksum XOR     │   ...                     │  - Salva CSV        │
-│                     │                           │  - Gráficos tempo   │
-│                     │                           │     real            │
-└─────────────────────┘                           └─────────────────────┘</code></pre>
+        <h2>PlatformIO vs Arduino IDE</h2>
+        <table>
+          <tr><th>Característica</th><th>Arduino IDE</th><th>PlatformIO</th></tr>
+          <tr><td>Gerenciamento de libs</td><td>Manual</td><td>Automático (lib_deps)</td></tr>
+          <tr><td>Múltiplos ambientes</td><td>Não</td><td>Sim (multi-env)</td></tr>
+          <tr><td>Testes</td><td>Não</td><td>Sim (Unity)</td></tr>
+          <tr><td>Debug</td><td>Limitado</td><td>GDB, Ozone</td></tr>
+          <tr><td>CI/CD</td><td>Não</td><td>Sim</td></tr>
+          <tr><td>Lint</td><td>Não</td><td>Sim (cppcheck, clang-tidy)</td></tr>
+        </table>
+        <p class="objective">PlatformIO é o padrão da indústria para projetos sérios.</p>
       </section>
 
       <section>
-        <h2>Firmware Arduino — 20 Hz</h2>
-        <pre><code class="language-cpp">const unsigned long PERIODO = 50;  // 20 Hz
+        <h2>Estrutura do Projeto</h2>
+        <pre><code class="language-text">projeto-telemetria/
+├── platformio.ini       # Configuracao principal
+├── src/
+│   └── main.cpp         # Codigo fonte
+├── lib/
+│   ├── BMP280Wrapper/   # Biblioteca interna
+│   │   ├── BMP280Wrapper.h
+│   │   └── BMP280Wrapper.cpp
+│   └── PacketProtocol/
+│       ├── PacketProtocol.h
+│       └── PacketProtocol.cpp
+├── test/
+│   ├── test_checksum.cpp
+│   └── test_packet.cpp
+└── include/             # Headers globais
+    └── config.h</code></pre>
+      </section>
+
+      <section>
+        <h2>platformio.ini — Multi-Environments</h2>
+        <pre><code class="language-ini">[platformio]
+default_envs = native
+
+[env]
+monitor_speed = 115200
+
+[env:native]
+platform = native
+test_framework = unity
+
+[env:uno]
+platform = atmelavr
+board = uno
+framework = arduino
+lib_deps =
+  adafruit/Adafruit BMP280 Library@^2.6
+
+[env:teensy]
+platform = teensy
+board = teensy40
+framework = arduino
+lib_deps =
+  adafruit/Adafruit BMP280 Library@^2.6
+  bblanchon/ArduinoJson@^7.0
+
+[env:esp32]
+platform = espressif32
+board = esp32-devkitc-v4
+framework = arduino
+monitor_speed = 115200</code></pre>
+      </section>
+
+      <section>
+        <h2>lib_deps — Gerenciamento de Dependências</h2>
+        <p>PlatformIO baixa e gerencia bibliotecas automaticamente:</p>
+        <pre><code class="language-ini">[env:teensy]
+lib_deps =
+  adafruit/Adafruit BMP280 Library@^2.6.0
+  adafruit/Adafruit BusIO@^1.14
+  bblanchon/ArduinoJson@^7.0.0
+  # Tambem aceita URLs de GitHub:
+  # https://github.com/usuario/biblioteca.git
+
+lib_ignore =
+  Adafruit BusIO  # nao usar esta lib neste env</code></pre>
+        <p>Nunca mais baixe ZIP manualmente!</p>
+      </section>
+
+      <section>
+        <h2>build_flags e build_unflags</h2>
+        <p>Configure defines e flags do compilador:</p>
+        <pre><code class="language-ini">[env:teensy]
+build_flags =
+  -O2                        # Otimizacao
+  -DDEBUG_LEVEL=2            # Define em C
+  -DSERIAL_BAUD=115200
+  -std=c++17
+
+build_unflags =
+  -O0                        # Remove flag padrao
+
+[env:esp32]
+build_flags =
+  -DCORE_DEBUG_LEVEL=5       # Debug maximo
+  -DBOARD_HAS_PSRAM</code></pre>
+        <p>Use no código:</p>
+        <pre><code class="language-cpp">#ifdef DEBUG_LEVEL
+  Serial.print("Debug: ");
+  Serial.println(valor);
+#endif</code></pre>
+      </section>
+
+      <section>
+        <h2>lib/ — Bibliotecas Internas</h2>
+        <p>Cada biblioteca dentro de <code>lib/</code> tem seu próprio namespace:</p>
+        <pre><code class="language-cpp">// lib/BMP280Wrapper/BMP280Wrapper.h
+#pragma once
+#include &lt;Adafruit_BMP280.h&gt;
+
+class BMP280Wrapper {
+public:
+  bool begin(uint8_t addr = 0x76);
+  float lerTemperatura();
+  float lerPressao();
+  float lerAltitude(float pressao_nivel_mar = 1013.25);
+private:
+  Adafruit_BMP280 bmp;
+};</code></pre>
+        <pre><code class="language-cpp">// lib/BMP280Wrapper/BMP280Wrapper.cpp
+#include "BMP280Wrapper.h"
+
+bool BMP280Wrapper::begin(uint8_t addr) {
+  return bmp.begin(addr);
+}
+
+float BMP280Wrapper::lerTemperatura() {
+  return bmp.readTemperature();
+}</code></pre>
+      </section>
+
+      <section>
+        <h2>src/main.cpp — Código Principal</h2>
+        <pre><code class="language-cpp">#include &lt;Arduino.h&gt;
+#include "BMP280Wrapper.h"
+#include "PacketProtocol.h"
+
+BMP280Wrapper sensor;
+PacketProtocol protocolo;
 unsigned long ultima_amostra = 0;
-unsigned long contador = 0;
 
 void setup() {
   Serial.begin(115200);
   Wire.begin();
-  bmp.begin(0x76);
+
+  if (!sensor.begin()) {
+    Serial.println("Falha no sensor!");
+    while (1);
+  }
 }
 
 void loop() {
   unsigned long agora = millis();
-  if (agora - ultima_amostra < PERIODO) return;
+  if (agora - ultima_amostra < 50) return;
   ultima_amostra = agora;
 
-  float temp = bmp.readTemperature();
-  float pressao = bmp.readPressure();
-  float alt = bmp.readAltitude(1013.25);
-  contador++;
+  float temp = sensor.lerTemperatura();
+  float pressao = sensor.lerPressao();
+  float alt = sensor.lerAltitude();
 
-  enviarPacote(contador, alt, temp, pressao);
+  protocolo.enviarPacoteTelemetria(agora, alt, temp, pressao);
 }</code></pre>
       </section>
 
       <section>
-        <h2>Função de Envio com Checksum</h2>
-        <pre><code class="language-cpp">void enviarPacote(unsigned long id, float alt,
-                  float temp, float pressao) {
-  char buffer[128];
-  int n = snprintf(buffer, sizeof(buffer),
-    "$T,%lu,%.2f,%.2f,%.2f*",
-    id, alt, temp, pressao);
+        <h2>Testes com Unity</h2>
+        <p>Unity é um framework de testes para C/C++:</p>
+        <pre><code class="language-cpp">// test/test_checksum.cpp
+#include &lt;unity.h&gt;
+#include "PacketProtocol.h"
 
-  uint8_t cksum = 0;
-  for (int i = 1; buffer[i] != '*'; i++) {
-    cksum ^= buffer[i];
-  }
+PacketProtocol protocolo;
 
-  snprintf(buffer + n, sizeof(buffer) - n, "%02X\n", cksum);
-  Serial.print(buffer);
+void setUp(void) {}
+void tearDown(void) {}
+
+void test_checksum_correto() {
+  uint8_t calc = protocolo.calcularChecksum("T,100,25.30,101325");
+  uint8_t esperado = 'T' ^ ',' ^ '1' ^ '0' ^ '0' ^ ',' ... ;
+  TEST_ASSERT_EQUAL_UINT8(esperado, calc);
+}
+
+void test_checksum_vazio() {
+  uint8_t calc = protocolo.calcularChecksum("");
+  TEST_ASSERT_EQUAL_UINT8(0, calc);
+}
+
+void setup() {
+  UNITY_BEGIN();
+  RUN_TEST(test_checksum_correto);
+  RUN_TEST(test_checksum_vazio);
+  UNITY_END();
+}
+
+void loop() {}</code></pre>
+      </section>
+
+      <section>
+        <h2>Rodando Testes</h2>
+        <pre><code class="language-bash"># Testes nativos (no PC, rapido)
+pio test -e native
+
+# Testes no hardware Teensy
+pio test -e teensy
+
+# Com verbose
+pio test -e native -v
+
+# Filtrar por nome
+pio test -e native --filter checksum</code></pre>
+        <p>Testes nativos compilam para seu PC e rodam em segundos.</p>
+      </section>
+
+      <section>
+        <h2>Teste com Dados de Exemplo</h2>
+        <pre><code class="language-cpp">// test/test_packet.cpp
+void test_parse_pacote_valido() {
+  const char* linha = "$T,100,120.50,25.30,101325,5.01*3F\n";
+
+  Pacote pacote;
+  bool ok = protocolo.parseLinha(linha, &pacote);
+
+  TEST_ASSERT_TRUE(ok);
+  TEST_ASSERT_EQUAL_INT(100, pacote.timestamp);
+  TEST_ASSERT_FLOAT_WITHIN(0.01, 120.50, pacote.altitude);
+  TEST_ASSERT_FLOAT_WITHIN(0.01, 25.30, pacote.temperatura);
+  TEST_ASSERT_EQUAL_UINT8(0x3F, pacote.checksum);
+}
+
+void test_rejeita_checksum_invalido() {
+  const char* linha = "$T,100,120.50*00\n";  // checksum errado
+  Pacote pacote;
+  bool ok = protocolo.parseLinha(linha, &pacote);
+  TEST_ASSERT_FALSE(ok);
 }</code></pre>
-        <p>Saída: <code>$T,1,120.50,25.30,101325.00*3F</code></p>
       </section>
 
       <section>
-        <h2>Python — Leitura da Serial</h2>
-        <pre><code class="language-python">import serial
-import time
-
-def conectar(porta="/dev/ttyACM0", baud=115200):
-    ser = serial.Serial(
-        port=porta,
-        baudrate=baud,
-        timeout=0.1,  # 100 ms de timeout
-    )
-    time.sleep(2)  # aguarda reset do Arduino
-    ser.reset_input_buffer()
-    return ser</code></pre>
-        <p class="objective">Timeout baixo permite loop responsivo.</p>
-      </section>
-
-      <section>
-        <h2>Loop de Leitura em Tempo Real</h2>
-        <pre><code class="language-python">def ler_serial(ser, callback):
-    buffer = ""
-    while True:
-        try:
-            char = ser.read(1).decode("utf-8", errors="replace")
-            if char == "":
-                continue
-
-            buffer += char
-
-            if char == "\n":
-                linha = buffer.strip()
-                buffer = ""
-                if linha:
-                    callback(linha)
-
-        except serial.SerialException:
-            print("Erro: conexao perdida")
-            break
-        except KeyboardInterrupt:
-            print("\nEncerrando...")
-            break</code></pre>
-      </section>
-
-      <section>
-        <h2>Pipeline de Processamento</h2>
-        <pre><code class="language-python">def processar_linha(linha):
-    if not linha.startswith("$T"):
-        return None
-
-    partes = linha[1:].split("*")
-    if len(partes) != 2:
-        return None
-
-    dados, cksum_str = partes
-    campos = dados.split(",")
-
-    if len(campos) != 5:  # T,id,alt,temp,pressao
-        return None
-
-    cksum_calc = 0
-    for c in dados:
-        cksum_calc ^= ord(c)
-    cksum_esperado = int(cksum_str, 16)
-
-    if cksum_calc != cksum_esperado:
-        print(f"Checksum invalido: {linha.strip()}")
-        return None
-
-    return {
-        "id": int(campos[1]),
-        "altitude": float(campos[2]),
-        "temperatura": float(campos[3]),
-        "pressao": float(campos[4]),
-        "timestamp": time.time(),
-    }</code></pre>
-      </section>
-
-      <section>
-        <h2>Logger CSV com Timestamp</h2>
-        <pre><code class="language-python">import csv
-from datetime import datetime
-
-class CSVLogger:
-    def __init__(self, nome_base="log_voo"):
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.caminho = f"{nome_base}_{timestamp}.csv"
-        self.arquivo = open(self.caminho, "w", newline="")
-        self.escritor = csv.writer(self.arquivo)
-        self.escritor.writerow([
-            "timestamp_unix", "hora", "pacote_id",
-            "altitude", "temperatura", "pressao"
-        ])
-
-    def escrever(self, dado):
-        hora = datetime.fromtimestamp(
-            dado["timestamp"]
-        ).strftime("%H:%M:%S.%f")[:-3]
-        self.escritor.writerow([
-            f"{dado['timestamp']:.3f}",
-            hora,
-            dado["id"],
-            f"{dado['altitude']:.2f}",
-            f"{dado['temperatura']:.2f}",
-            f"{dado['pressao']:.2f}",
-        ])
-        self.arquivo.flush()  # garante escrita em disco
-
-    def fechar(self):
-        self.arquivo.close()</code></pre>
-      </section>
-
-      <section>
-        <h2>Gráfico em Tempo Real (opcional)</h2>
-        <pre><code class="language-python">import matplotlib.pyplot as plt
-from collections import deque
-
-MAX_PONTOS = 100
-tempos = deque(maxlen=MAX_PONTOS)
-altitudes = deque(maxlen=MAX_PONTOS)
-
-plt.ion()
-fig, ax = plt.subplots()
-linha, = ax.plot([], [], color="#ff6b35")
-ax.set_xlabel("Amostra")
-ax.set_ylabel("Altitude (m)")
-ax.grid(True, alpha=0.3)
-
-def atualizar_grafico(dado):
-    tempos.append(dado["id"])
-    altitudes.append(dado["altitude"])
-    linha.set_data(list(tempos), list(altitudes))
-    ax.relim()
-    ax.autoscale_view()
-    plt.pause(0.001)</code></pre>
-        <p class="objective">Use com moderação — I/O de plotagem pode perder pacotes.</p>
-      </section>
-
-      <section>
-        <h2>Script Principal Unificado</h2>
-        <pre><code class="language-python">def main():
-    ser = conectar()
-    logger = CSVLogger()
-    pacotes_validos = 0
-    pacotes_invalidos = 0
-
-    def callback(linha):
-        nonlocal pacotes_validos, pacotes_invalidos
-        dado = processar_linha(linha)
-        if dado:
-            logger.escrever(dado)
-            pacotes_validos += 1
-            if pacotes_validos % 100 == 0:
-                print(f"{pacotes_validos} pacotes coletados")
-        else:
-            pacotes_invalidos += 1
-
-    try:
-        ler_serial(ser, callback)
-    finally:
-        logger.fechar()
-        ser.close()
-        total = pacotes_validos + pacotes_invalidos
-        print(f"\nTotal: {total} pacotes")
-        print(f"Validos: {pacotes_validos}")
-        print(f"Invalidos: {pacotes_invalidos}")
-        print(f"Taxa: {pacotes_validos/(total or 1):.1%}")</code></pre>
-      </section>
-
-      <section>
-        <h2>Testando sem Hardware</h2>
-        <p>Simulador Arduino em Python:</p>
-        <pre><code class="language-python">import serial
-import time
-import threading
-
-def simulador_arduino():
-    import socket
-    import sys
-
-    # Usa um par de portas seriais virtuais (socat)
-    # ou simplesmente grava em um arquivo para teste
-    with open("simulated_serial.txt", "w") as f:
-        for i in range(100):
-            alt = 100 + i * 0.5
-            temp = 25 + math.sin(i * 0.1) * 2
-            pressao = 101325 - i * 10
-
-            linha = f"$T,{i+1},{alt:.2f},{temp:.2f},{pressao:.2f}*"
-            cksum = 0
-            for c in linha[1:]:
-                cksum ^= ord(c)
-            linha += f"{cksum:02X}\n"
-
-            f.write(linha)
-            time.sleep(0.05)  # 20 Hz
-
-    print("Simulacao gravada em simulated_serial.txt")</code></pre>
-      </section>
-
-      <section>
-        <h2>Debug e Troubleshooting</h2>
-        <ul>
-          <li><strong>Sem dados:</strong> Verificar porta e permissões (grupo dialout)</li>
-          <li><strong>Dados corrompidos:</strong> Taxa de baud igual nos dois lados</li>
-          <li><strong>Pacotes perdidos:</strong> buffer serial pequeno, aumentar timeout</li>
-          <li><strong>Checksum errado:</strong> Verificar \r\n vs \n</li>
-          <li><strong>Reset ao conectar:</strong> DTR enable, usar time.sleep(2)</li>
-        </ul>
-        <pre><code class="language-bash"># Descobrir porta
-ls /dev/ttyACM* /dev/ttyUSB*
-# Ver permissoes
-ls -l /dev/ttyACM0
-# Adicionar ao grupo
-sudo usermod -a -G dialout $USER</code></pre>
+        <h2>Integração Contínua (CI)</h2>
+        <p>PlatformIO se integra com GitHub Actions:</p>
+        <pre><code class="language-yaml"># .github/workflows/test.yml
+name: Test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PlatformIO
+        run: pip install platformio
+      - name: Run native tests
+        run: pio test -e native</code></pre>
       </section>
 
       <section>
         <h2>Exercícios</h2>
         <ol>
-          <li>Arduino envia pacotes a 20 Hz com checksum</li>
-          <li>Python lê e valida em tempo real</li>
-          <li>Log CSV com timestamp Unix e hora legível</li>
-          <li>Calcular taxa de pacotes válidos vs inválidos</li>
-          <li>(Extra) Gráfico em tempo real com matplotlib animado</li>
+          <li>Criar projeto PlatformIO com estrutura src/, lib/, test/</li>
+          <li>Configurar platformio.ini com env:native e env:uno</li>
+          <li>Criar biblioteca interna (ex: Calculator) em lib/</li>
+          <li>Escrever 3 testes com Unity (nativo)</li>
+          <li>Adicionar build_flag para DEBUG e testar</li>
         </ol>
         <p class="objective">Entregar via PR até domingo.</p>
       </section>
@@ -332,13 +320,14 @@ sudo usermod -a -G dialout $USER</code></pre>
       <section>
         <h2>Resumo & Conclusão</h2>
         <ul>
-          <li>Firmware envia pacotes telemetria a 20 Hz</li>
-          <li>Python lê da serial com parsing e validação</li>
-          <li>Pipeline: leitura → parse → validação → log CSV</li>
-          <li>Sistema funcional para coleta de dados reais</li>
+          <li>PlatformIO substitui Arduino IDE com vantagens profissionais</li>
+          <li>Estrutura src/lib/test organiza o projeto</li>
+          <li>platformio.ini multi-env para diferentes placas</li>
+          <li>lib_deps gerencia dependências automaticamente</li>
+          <li>Testes Unity garantem qualidade do código</li>
         </ul>
-        <p>A base para qualquer sistema de telemetria solo-pc.</p>
-        <p class="subtitle">Próximo passo: Semana 06 — KiCad básico</p>
+        <p>PlatformIO é o padrão para firmware de telemetria.</p>
+        <p class="subtitle">Próximo passo: Semana 06 — Integração Arduino ↔ Python</p>
       </section>
 
     </div>

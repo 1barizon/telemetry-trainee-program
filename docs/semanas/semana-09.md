@@ -1,442 +1,483 @@
-# Semana 9 - Chips personalizados no Wokwi
+# Semana 9 - Capstone
 
 ## Objetivo
 
-Adicionar os **componentes personalizados** (custom chips) do computador de bordo ao [Wokwi](https://wokwi.com/), rodar um firmware que lê os três sensores e gerar a telemetria, e fechar o ciclo do treinamento analisando o log no Colab.
-
-## Contexto
-
-O firmware de voo precisa ser validado antes de ir para o hardware físico. No Wokwi, os sensores são **chips personalizados** escritos na Chips API (C compilado para WebAssembly): eles respondem em I2C/UART exatamente como os componentes reais, então o mesmo firmware de telemetria pode ser exercitado sem montar a placa.
-
-Esta semana fecha o ciclo do treinamento com o hardware do Flight Computer (ESP32-S3 + BMP585 + LSM6DS3 + NEO-8M):
-
-```
-sensores simulados (custom chips)
-        -> firmware (ESP32-S3)
-        -> log serial cru
-        -> parser -> CSV tratado
-        -> graficos (Colab)
-```
-
-> Esta semana é **oficial** e vem depois do capstone. Ela usa as mesmas habilidades das Semanas 1, 2 e 3, agora com os sensores reais do computador de bordo simulados.
+Integrar tudo que aprendeu em um pipeline end-to-end: Arduino gera dados → Python recebe, processa e analisa. Este é o momento de aplicar todo o conteúdo do núcleo do treinamento em um projeto funcional.
 
 ## Preparação
 
-- [ ] Semanas 0 a 8 concluídas (esta semana reaproveita as Semanas 1, 2 e 3)
-- [ ] Conta no [Wokwi](https://wokwi.com/) (login com GitHub)
-- [ ] Ler o [README dos chips personalizados](../../entregas/dados/wokwi-chips/README.md)
-- [ ] Ler a [Trilha Sensores e Protocolos](../trilhas/sensors.md) (seções de I2C e UART)
+- [ ] Semanas 0 a 8 concluídas
+- [ ] ESP32-C3 + BMP280 montados na protoboard
 - [ ] Ver o [Slide deck](../slides/semana-09.html)
 - [ ] Fazer o [Quiz](../quiz/semana-09.html)
-
-## Kit de simulação
-
-Os chips ficam em [`entregas/dados/wokwi-chips/`](../../entregas/dados/wokwi-chips/) e são **somente leitura**:
-
-| Chip | Pasta | Interface | Endereço / Baud |
-|------|-------|-----------|-----------------|
-| BMP585 (barômetro) | `bmp585/` | I2C | `0x7E` |
-| LSM6DS3 (IMU) | `lsm6ds3/` | I2C | `0x6B` |
-| NEO-8M (GPS) | `neo-8m/` | UART | `9600` baud |
-
-Ligação (a mesma do `diagram-exemplo.json` e do `config.h` do computador de bordo):
-
-| Sensor | Sinal | ESP32-S3 |
-|--------|-------|----------|
-| BMP585 | SDA / SCL | GPIO 8 / GPIO 9 |
-| LSM6DS3 | SDA / SCL | GPIO 8 / GPIO 9 |
-| NEO-8M | TX / RX | GPIO 17 / GPIO 18 |
-| Todos | VCC / GND | 3.3V / GND |
-
-> Os dois sensores I2C compartilham o mesmo barramento (GPIO 8/9). O GPS é UART a 9600 baud, então usa `Serial1` (a `Serial` continua livre para o log no monitor).
+- [ ] Revisar as trilhas de [Python](../trilhas/python.md), [Arduino](../trilhas/arduino-ide.md) e [PlatformIO](../trilhas/platformio.md)
 
 ## Problema
 
-### Tarefa 1 - Adicionar os chips personalizados
+Implemente um pipeline completo de telemetria com 4 fases, inspirado nos projetos reais.
 
-Monte o projeto **do zero** (não vale importar o exemplo pronto) para praticar o fluxo que você vai repetir em qualquer sensor novo:
+### Fase 1 - Aquisição (Arduino)
 
-1. Abra [wokwi.com](https://wokwi.com/) e crie um projeto com a placa **ESP32-S3** (`board-esp32-s3-devkitc-1`).
-2. Clique no **"+"** da barra roxa e adicione um **Custom Chip** com:
-   - nome `bmp585`, linguagem **C**;
-   - depois `lsm6ds3`, também **C**;
-   - depois `neo-8m`, também **C**.
-3. Para cada chip, **substitua** o conteúdo dos dois arquivos gerados pelo Wokwi (`<nome>.chip.json` e `<nome>.chip.c`) pelos arquivos da pasta correspondente em `entregas/dados/wokwi-chips/`.
-4. Ligue os pinos conforme a tabela acima. No `diagram.json`, os chips aparecem como `chip-bmp585`, `chip-lsm6ds3` e `chip-neo-8m`.
-5. Confira se as mensagens de boot aparecem no **Chips Console**:
-   ```
-   BMP585 pronto (I2C 0x7E)
-   LSM6DS3 pronto (I2C 0x6B)
-   NEO-8M pronto: lat=... lon=... alt=...
-   ```
+O ESP32-C3 deve funcionar como um mini Flight Computer:
 
-Referência: o [`diagram-exemplo.json`](../../entregas/dados/wokwi-chips/diagram-exemplo.json) mostra o resultado esperado das ligações. Use-o para **conferir** o seu diagrama, não para substituir a tarefa.
+Hardware:
+- ESP32-C3 Super Mini
+- BMP280 (I2C, endereço 0x76)
+- LED (GPIO 1) como heartbeat
+- Buzzer (GPIO 0) para alertas
+- Botão (GPIO 2) para trigger manual
 
-### Tarefa 2 - Firmware de telemetria
-
-Substitua o `sketch.ino` pelo firmware abaixo. Ele lê os três chips, converte a pressão em altitude e envia um pacote a **10 Hz** pela serial:
-
+Firmware:
 ```cpp
+// main.cpp
+#include <Arduino.h>
 #include <Wire.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+#include <Adafruit_BMP280.h>
 
-// --- Pinos (mesmos do config.h do computador de bordo) ---
-#define I2C_SDA 8
-#define I2C_SCL 9
-#define GPS_RX  17
-#define GPS_TX  18
+#define LED_PIN 1
+#define BUZZER_PIN 0
+#define BUTTON_PIN 2
 
-// --- Enderecos I2C dos chips personalizados ---
-#define BMP585_ADDR  0x7E
-#define LSM6DS3_ADDR 0x6B
+Adafruit_BMP280 bmp;
+unsigned long lastSample = 0;
+const unsigned long INTERVAL = 50; // 20 Hz
 
-// --- Parametros da telemetria ---
-#define INTERVALO_MS 100        // 10 Hz
-#define P_REF_HPA    1013.25f   // pressao de referencia (nivel do mar)
-
-unsigned long ultimoEnvio = 0;
-unsigned long contadorPacote = 0;
-
-float lat = 0.0f, lon = 0.0f, gpsAlt = 0.0f;
-int satelites = 0;
-char linhaNmea[120];
-size_t tamNmea = 0;
-
-int32_t lerInt24LE(const uint8_t *buf) {
-  int32_t valor = buf[0] | (buf[1] << 8) | (buf[2] << 16);
-  if (valor & 0x800000) valor -= 0x1000000;   // complemento de dois
-  return valor;
-}
-
-int16_t lerInt16LE(const uint8_t *buf, int offset) {
-  return (int16_t)(buf[offset] | (buf[offset + 1] << 8));
-}
-
-bool lerBMP585(float &pressaoHpa, float &temperaturaC) {
-  uint8_t buf[3];
-
-  Wire.beginTransmission(BMP585_ADDR);
-  Wire.write(0x20);                            // PRESS_XLSB
-  if (Wire.endTransmission(false) != 0) return false;
-  if (Wire.requestFrom((uint8_t)BMP585_ADDR, (uint8_t)3) != 3) return false;
-  for (int i = 0; i < 3; i++) buf[i] = Wire.read();
-  pressaoHpa = (lerInt24LE(buf) / 64.0f) / 100.0f;   // LSB = 1/64 Pa
-
-  Wire.beginTransmission(BMP585_ADDR);
-  Wire.write(0x1D);                            // TEMP_XLSB
-  if (Wire.endTransmission(false) != 0) return false;
-  if (Wire.requestFrom((uint8_t)BMP585_ADDR, (uint8_t)3) != 3) return false;
-  for (int i = 0; i < 3; i++) buf[i] = Wire.read();
-  temperaturaC = lerInt24LE(buf) / 65536.0f;        // LSB = 1/2^16 C
-
-  return true;
-}
-
-bool lerLSM6DS3(float &ax, float &ay, float &az,
-                float &gx, float &gy, float &gz) {
-  // O chip inicia com CTRL1_XL = 0x60 (+-2 g) e CTRL2_G = 0x60 (250 dps)
-  const float SENS_G = 0.000061f;      // g/LSB
-  const float SENS_DPS = 0.00875f;     // dps/LSB
-  uint8_t buf[6];
-
-  Wire.beginTransmission(LSM6DS3_ADDR);
-  Wire.write(0x28);                            // OUTX_L_XL
-  if (Wire.endTransmission(false) != 0) return false;
-  if (Wire.requestFrom((uint8_t)LSM6DS3_ADDR, (uint8_t)6) != 6) return false;
-  for (int i = 0; i < 6; i++) buf[i] = Wire.read();
-  ax = lerInt16LE(buf, 0) * SENS_G;
-  ay = lerInt16LE(buf, 2) * SENS_G;
-  az = lerInt16LE(buf, 4) * SENS_G;
-
-  Wire.beginTransmission(LSM6DS3_ADDR);
-  Wire.write(0x22);                            // OUTX_L_G
-  if (Wire.endTransmission(false) != 0) return false;
-  if (Wire.requestFrom((uint8_t)LSM6DS3_ADDR, (uint8_t)6) != 6) return false;
-  for (int i = 0; i < 6; i++) buf[i] = Wire.read();
-  gx = lerInt16LE(buf, 0) * SENS_DPS;
-  gy = lerInt16LE(buf, 2) * SENS_DPS;
-  gz = lerInt16LE(buf, 4) * SENS_DPS;
-
-  return true;
-}
-
-float nmeaParaGraus(const char *valor, char hemisferio) {
-  if (valor[0] == '\0') return 0.0f;
-  float bruto = atof(valor);                   // ddmm.mmmm
-  int graus = (int)(bruto / 100.0f);
-  float minutos = bruto - graus * 100.0f;
-  float decimal = graus + minutos / 60.0f;
-  if (hemisferio == 'S' || hemisferio == 'W') decimal = -decimal;
-  return decimal;
-}
-
-void interpretarGGA(char *linha) {
-  if (strncmp(linha, "$GPGGA,", 7) != 0) return;
-
-  char *campos[15];
-  int n = 0;
-  char *token = strtok(linha, ",");
-  while (token != NULL && n < 15) {
-    campos[n++] = token;
-    token = strtok(NULL, ",");
-  }
-  if (n < 10 || campos[6][0] == '0') return;   // sem fix
-
-  lat = nmeaParaGraus(campos[2], campos[3][0]);
-  lon = nmeaParaGraus(campos[4], campos[5][0]);
-  satelites = atoi(campos[7]);
-  gpsAlt = atof(campos[9]);
-}
-
-void lerGPS() {
-  while (Serial1.available() > 0) {
-    char c = (char)Serial1.read();
-    if (c == '\n') {
-      linhaNmea[tamNmea] = '\0';
-      interpretarGGA(linhaNmea);
-      tamNmea = 0;
-    } else if (c != '\r' && tamNmea < sizeof(linhaNmea) - 1) {
-      linhaNmea[tamNmea++] = c;
-    }
-  }
-}
-
-float pressaoParaAltitude(float pressaoHpa) {
-  return 44330.0f * (1.0f - powf(pressaoHpa / P_REF_HPA, 0.1903f));
-}
-
-bool i2cPresente(uint8_t endereco) {
-  Wire.beginTransmission(endereco);
-  return Wire.endTransmission() == 0;
-}
+float peakAltitude = 0;
+int apogeeCount = 0;
+bool apogeeDetected = false;
 
 void setup() {
-  Serial.begin(115200);
-  Wire.begin(I2C_SDA, I2C_SCL);
-  Serial1.begin(9600, SERIAL_8N1, GPS_RX, GPS_TX);
-
-  delay(200);
-
-  Serial.print("[INFO] BMP585=");
-  Serial.print(i2cPresente(BMP585_ADDR) ? "OK" : "AUSENTE");
-  Serial.print(" LSM6DS3=");
-  Serial.println(i2cPresente(LSM6DS3_ADDR) ? "OK" : "AUSENTE");
-  Serial.println("[INFO] pacote: ID,millis,pckt,alt,temp,press,gx,gy,gz,ax,ay,az,gps_alt,lat,lon,sat");
+    Serial.begin(115200);
+    pinMode(LED_PIN, OUTPUT);
+    pinMode(BUZZER_PIN, OUTPUT);
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    
+    Wire.begin(8, 9); // SDA=GPIO8, SCL=GPIO9
+    
+    if (!bmp.begin(0x76)) {
+        Serial.println("ERRO:BMP280#");
+        while (1);
+    }
+    
+    Serial.println("BOOT OK#");
 }
 
 void loop() {
-  lerGPS();                                  // GPS chega a 1 Hz
-
-  unsigned long agora = millis();
-  if (agora - ultimoEnvio < INTERVALO_MS) return;
-  ultimoEnvio = agora;
-
-  float pressao, temperatura;
-  if (!lerBMP585(pressao, temperatura)) {
-    Serial.println("[ERRO] BMP585 nao respondeu");
-    return;
-  }
-
-  float ax, ay, az, gx, gy, gz;
-  if (!lerLSM6DS3(ax, ay, az, gx, gy, gz)) {
-    Serial.println("[ERRO] LSM6DS3 nao respondeu");
-    return;
-  }
-
-  float altitude = pressaoParaAltitude(pressao);
-
-  char pacote[192];
-  snprintf(pacote, sizeof(pacote),
-           "#51,%lu,%lu,%.2f,%.2f,%.2f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.6f,%.6f,%d",
-           millis(), contadorPacote, altitude, temperatura, pressao,
-           gx, gy, gz, ax, ay, az, gpsAlt, lat, lon, satelites);
-  Serial.println(pacote);
-  contadorPacote++;
+    unsigned long now = millis();
+    
+    // LED heartbeat (1 Hz)
+    digitalWrite(LED_PIN, (now / 500) % 2);
+    
+    // Amostragem a 20 Hz
+    if (now - lastSample >= INTERVAL) {
+        lastSample = now;
+        
+        // Ler sensores
+        float alt = bmp.readAltitude(1013.25);
+        float temp = bmp.readTemperature();
+        float pres = bmp.readPressure() / 100.0F;
+        
+        // Simular acelerômetro (substitua por ICM-20602 real)
+        float ax = 0.01 + (random(-10, 10) / 1000.0);
+        float ay = 0.02 + (random(-10, 10) / 1000.0);
+        float az = 9.81 + (random(-50, 50) / 1000.0);
+        
+        // Calcular checksum (soma dos caracteres do payload)
+        char payload[128];
+        snprintf(payload, sizeof(payload), "%lu;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f",
+            now, alt, ax, ay, az, temp, pres);
+        
+        uint8_t checksum = 0;
+        for (int i = 0; payload[i] != 0; i++) {
+            checksum ^= payload[i];
+        }
+        
+        // Montar pacote completo
+        char packet[144];
+        snprintf(packet, sizeof(packet), "#%s;%02X#", payload, checksum);
+        Serial.println(packet);
+        
+        // Detectar apogeu (simplificado)
+        if (alt > peakAltitude) {
+            peakAltitude = alt;
+            apogeeCount = 0;
+        } else {
+            apogeeCount++;
+            if (apogeeCount >= 10 && !apogeeDetected) {
+                apogeeDetected = true;
+                digitalWrite(BUZZER_PIN, HIGH);
+                delay(200);
+                digitalWrite(BUZZER_PIN, LOW);
+                Serial.println("EVENT:APOGEE#");
+            }
+        }
+        
+        // Reset com botão
+        if (digitalRead(BUTTON_PIN) == LOW) {
+            peakAltitude = 0;
+            apogeeCount = 0;
+            apogeeDetected = false;
+            Serial.println("EVENT:RESET#");
+            delay(200); // debounce
+        }
+    }
 }
 ```
 
-Regras do firmware:
+Formato do pacote:
+```
+#timestamp;alt;ax;ay;az;temp;pres;checksum#
+Exemplo: #12345;150.25;0.01;0.02;9.81;25.3;1013.25;A3#
+```
 
-- Taxa de envio de **10 Hz** (`INTERVALO_MS = 100`), sem `delay()` no `loop()`
-- Lat/lon/GPS se atualizam a **1 Hz**; o firmware mantém o último valor válido entre atualizações
-- A altitude é calculada **no firmware** a partir da pressão (`P_REF_HPA = 1013.25`)
+### Fase 2 - Recepção (Python)
 
-### Tarefa 3 - Simular e salvar o log cru
-
-1. Rode a simulação e abra o **Serial Monitor** em **115200**.
-2. Deixe rodando por **5 minutos** (mínimo de **3.000 pacotes** a 10 Hz), mexendo nos controles dos chips:
-   - **BMP585**: altere a pressão para simular a subida (ex.: `1013` → `950` → `800` hPa) e a temperatura;
-   - **LSM6DS3**: altere a aceleração e o giroscópio (deixe `accelZ ≈ 1 g` em repouso);
-   - **NEO-8M**: altere latitude/longitude/altitude para a "base".
-3. Copie a saída do Serial Monitor e salve como `log_wokwi.txt` na pasta da semana.
-4. Anote no README a pressão mínima atingida e o intervalo de tempo simulado.
-
-> Dica: mantenha a linha `[INFO]` de boot no log. O parser vai ignorá-la, como já fazia com `[STATS]`/`[MESH]` na Semana 2.
-
-### Tarefa 4 - Parser e CSV tratado
-
-Adapte o parser da **Semana 2** para o formato desta semana. As mudanças são só três:
+Script que recebe, valida e armazena dados:
 
 ```python
-COLUNAS = ["ID", "millis", "pckt", "alt", "temp", "press",
-           "gx", "gy", "gz", "ax", "ay", "az",
-           "gps_alt", "lat", "lon", "sat"]
+#!/usr/bin/env python3
+"""receptor.py - Recebe pacotes do ESP32 via serial"""
 
-def parse_packet(linha):
-    linha = linha.strip()
-    if not linha.startswith("#51,"):
-        return None
-    campos = linha.split(",")
-    if len(campos) != len(COLUNAS):        # 16 campos
-        return None
+import serial
+import csv
+import time
+from datetime import datetime
+
+def parse_packet(line):
+    """Parse e valida pacote no formato #payload;checksum#"""
+    if not line.startswith('#') or not line.endswith('#'):
+        return None, "Formato inválido"
+    
+    content = line[1:-1]  # Remove # inicial e final
+    parts = content.split(';')
+    
+    if len(parts) != 7:
+        return None, "Número de campos inválido"
+    
     try:
-        dados = dict(zip(COLUNAS, campos))
-        dados["ID"] = int(dados["ID"].lstrip("#"))
-        for nome in COLUNAS[1:]:
-            dados[nome] = float(dados[nome])
-        dados["sat"] = int(dados["sat"])
-        return dados
-    except ValueError:
-        return None
+        timestamp = int(parts[0])
+        altitude = float(parts[1])
+        ax = float(parts[2])
+        ay = float(parts[3])
+        az = float(parts[4])
+        temp = float(parts[5])
+        pres = float(parts[6])
+        checksum = parts[7] if len(parts) > 7 else None
+    except (ValueError, IndexError) as e:
+        return None, f"Erro de parsing: {e}"
+    
+    # Validar ranges físicos
+    if altitude < -100 or altitude > 10000:
+        return None, f"Altitude fora do range: {altitude}"
+    
+    g = (ax2 + ay2 + az2)  0.5
+    if g < 8.0 or g > 12.0:
+        return None, f"Aceleração fora do range: {g:.2f}g"
+    
+    if temp < -40 or temp > 85:
+        return None, f"Temperatura fora do range: {temp}"
+    
+    if pres < 300 or pres > 1200:
+        return None, f"Pressão fora do range: {pres}"
+    
+    # Verificar checksum
+    if checksum:
+        payload = ';'.join(parts[:7])
+        calc_checksum = 0
+        for c in payload:
+            calc_checksum ^= ord(c)
+        if f"{calc_checksum:02X}" != checksum:
+            return None, f"Checksum inválido"
+    
+    return {
+        'timestamp': timestamp,
+        'altitude': altitude,
+        'ax': ax, 'ay': ay, 'az': az,
+        'temp': temp,
+        'pres': pres
+    }, None
+
+def main():
+    ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+    
+    valid_count = 0
+    invalid_count = 0
+    start_time = time.time()
+    
+    # Preparar arquivos
+    csv_file = open('dados/telemetria.csv', 'w', newline='')
+    csv_writer = csv.writer(csv_file)
+    csv_writer.writerow(['timestamp', 'altitude', 'ax', 'ay', 'az', 'temp', 'pres'])
+    
+    error_log = open('dados/erros.log', 'w')
+    
+    print("Aguardando pacotes...")
+    print("Pressione Ctrl+C para parar")
+    
+    try:
+        while True:
+            line = ser.readline().decode('utf-8', errors='ignore').strip()
+            if not line:
+                continue
+            
+            data, error = parse_packet(line)
+            
+            if data:
+                valid_count += 1
+                csv_writer.writerow([
+                    data['timestamp'], data['altitude'],
+                    data['ax'], data['ay'], data['az'],
+                    data['temp'], data['pres']
+                ])
+                
+                # Estatísticas a cada 50 pacotes
+                if valid_count % 50 == 0:
+                    elapsed = time.time() - start_time
+                    rate = valid_count / elapsed if elapsed > 0 else 0
+                    print(f"[{valid_count}] Válidos: {valid_count} | "
+                          f"Inválidos: {invalid_count} | "
+                          f"Taxa: {rate:.1f} pkt/s")
+            else:
+                invalid_count += 1
+                error_log.write(f"{datetime.now().isoformat()} | {line} | {error}\n")
+    
+    except KeyboardInterrupt:
+        print("\nEncerrando...")
+    finally:
+        csv_file.close()
+        error_log.close()
+        ser.close()
+        
+        # Relatório final
+        total = valid_count + invalid_count
+        print(f"\nRelatório:")
+        print(f"  Total: {total}")
+        print(f"  Válidos: {valid_count} ({100*valid_count/total:.1f}%)")
+        print(f"  Inválidos: {invalid_count} ({100*invalid_count/total:.1f}%)")
+
+if __name__ == '__main__':
+    main()
 ```
 
-Validação (mesmos ranges físicos da Semana 2, com os campos novos):
+### Fase 3 - Análise (Python)
 
-| Campo | Range |
-|---|---|
-| `alt` | -100 a 10000 m |
-| `temp` | -40 a 85 °C |
-| `press` | 300 a 1100 hPa |
-| `gps_alt` | -100 a 10000 m |
-| `lat` | -90 a 90 |
-| `lon` | -180 a 180 |
-| `sat` | 0 a 30 |
-
-Linhas que **não** são pacote (`[INFO]`, `[ERRO]`, vazias) devem ser ignoradas sem quebrar o script. O resultado vai para `dados_tratados.csv` **com cabeçalho**, como na Semana 2.
-
-Saída esperada no terminal (exemplo):
-
-```
-Processando...
-
-Resumo:
-  Linhas lidas:    3002
-  Pacotes:         3000
-  Validos:         3000
-  Parse err:          0
-  Valid rej:          0
-  Taxa OK:          100%
-  Ignoradas:          2
-CSV tratado salvo em dados_tratados.csv
-```
-
-### Tarefa 5 - Análise no Colab
-
-Abra o `dados_tratados.csv` no Colab (como na Semana 1) e gere:
-
-- altitude do barômetro (`alt`) **e** altitude do GPS (`gps_alt`) no tempo;
-- aceleração nos três eixos (`ax`, `ay`, `az`);
-- pressão (`press`) e temperatura (`temp`);
-- (opcional) trajetória `lon` × `lat` colorida pelo tempo.
+Script que gera relatório e gráficos:
 
 ```python
-import pandas as pd
+#!/usr/bin/env python3
+"""analise.py - Analisa dados de telemetria coletados"""
 
-df = pd.read_csv("dados_tratados.csv")
-df["tempo_s"] = (df["millis"] - df["millis"].min()) / 1000
+import csv
+import matplotlib.pyplot as plt
+import statistics
 
-df.plot(x="tempo_s", y=["alt", "gps_alt"], title="Altitude (barometro x GPS)")
-df.plot(x="tempo_s", y=["ax", "ay", "az"], title="Aceleracao")
-df.plot(x="tempo_s", y=["press", "temp"], title="Pressao e temperatura")
+def analyze_data(filename):
+    timestamps, altitudes, temps, pressures = [], [], [], []
+    
+    with open(filename) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            timestamps.append(int(row['timestamp']) / 1000)  # ms → s
+            altitudes.append(float(row['altitude']))
+            temps.append(float(row['temp']))
+            pressures.append(float(row['pres']))
+    
+    # Encontrar apogeu
+    apogee_idx = altitudes.index(max(altitudes))
+    apogee_time = timestamps[apogee_idx]
+    apogee_alt = altitudes[apogee_idx]
+    
+    # Estatísticas
+    stats = {
+        'Altitude (m)': {
+            'Média': statistics.mean(altitudes),
+            'Máxima': max(altitudes),
+            'Mínima': min(altitudes),
+            'Std': statistics.stdev(altitudes) if len(altitudes) > 1 else 0
+        },
+        'Temperatura (°C)': {
+            'Média': statistics.mean(temps),
+            'Máxima': max(temps),
+            'Mínima': min(temps)
+        },
+        'Pressão (hPa)': {
+            'Média': statistics.mean(pressures),
+            'Máxima': max(pressures),
+            'Mínima': min(pressures)
+        }
+    }
+    
+    # Gráfico
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+    
+    ax1.plot(timestamps, altitudes, 'b-', linewidth=2, label='Altitude')
+    ax1.axvline(x=apogee_time, color='r', linestyle='--', 
+                label=f'Apogeu: {apogee_alt:.1f}m')
+    ax1.set_xlabel('Tempo (s)')
+    ax1.set_ylabel('Altitude (m)')
+    ax1.set_title('Perfil de Voo')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    
+    ax2.plot(timestamps, temps, 'r-', label='Temperatura')
+    ax2.plot(timestamps, pressures, 'g-', label='Pressão')
+    ax2.set_xlabel('Tempo (s)')
+    ax2.set_ylabel('Temperatura (°C) / Pressão (hPa)')
+    ax2.set_title('Ambiente')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig('resultados/perfil_voo.png', dpi=150)
+    
+    return stats, apogee_alt, apogee_time
+
+def main():
+    print("Analisando dados de telemetria...")
+    
+    stats, apogee_alt, apogee_time = analyze_data('dados/telemetria.csv')
+    
+    print(f"\n{'='*50}")
+    print(f"APOGEU: {apogee_alt:.1f}m em t={apogee_time:.1f}s")
+    print(f"{'='*50}\n")
+    
+    for campo, valores in stats.items():
+        print(f"{campo}:")
+        for nome, valor in valores.items():
+            print(f"  {nome}: {valor:.2f}")
+        print()
+    
+    print("Gráfico salvo em: resultados/perfil_voo.png")
+
+if __name__ == '__main__':
+    main()
 ```
 
-## Formato do pacote
+### Fase 4 - Documentação
 
-Pacote de **16 campos**, separados por vírgula, começando com `#51` e **sem** terminador no fim:
+README.md completo com:
 
-```
-#51,millis,pckt,alt,temp,press,gx,gy,gz,ax,ay,az,gps_alt,lat,lon,sat
-```
+```markdown
+# Capstone - Pipeline de Telemetria
 
-| # | Campo | Unidade | Origem |
-|---|-------|---------|--------|
-| 0 | `ID` | - | fixo `51` (identificador do computador de bordo) |
-| 1 | `millis` | ms | `millis()` |
-| 2 | `pckt` | - | contador de pacotes |
-| 3 | `alt` | m | BMP585 (pressão convertida em altitude) |
-| 4 | `temp` | °C | BMP585 |
-| 5 | `press` | hPa | BMP585 |
-| 6-8 | `gx`, `gy`, `gz` | dps | LSM6DS3 |
-| 9-11 | `ax`, `ay`, `az` | g | LSM6DS3 |
-| 12 | `gps_alt` | m | NEO-8M (GGA) |
-| 13 | `lat` | graus decimais | NEO-8M (GGA) |
-| 14 | `lon` | graus decimais | NEO-8M (GGA) |
-| 15 | `sat` | - | NEO-8M (GGA) |
+## Visão Geral
 
-> É um **subconjunto** do pacote de 24 campos do computador de bordo (mesmos nomes e mesma ordem relativa), reduzido ao que os chips simulam. Assim o parser da Semana 2 é reaproveitado mudando só a lista de colunas.
+Pipeline end-to-end inspirado nos projetos Flight Computer e Helike da Serra Rocketry.
 
-## Dicas
-
-- O BMP585 simulado **não** funciona com a biblioteca Adafruit: leia os registradores direto com `Wire` (é o que o firmware acima faz)
-- `Wire.begin(sda, scl)` no ESP32-S3 define o barramento I2C em GPIO 8/9
-- `Serial1.begin(9600, SERIAL_8N1, RX, TX)` usa UART1 sem ocupar a `Serial` do monitor
-- O GPS do Wokwi manda `GPGGA` + `GPRMC` a cada 1 s; só o `GPGGA` interessa aqui
-- `strtok()` destrói a string original: por isso o parser do GPS trabalha numa cópia (`linhaNmea`)
-- A conversão barométrica é aproximada; o objetivo é a lógica, não a precisão de ±1 m
-- Se o pacote sair com `nan`, algum campo veio inválido: confira o `requestFrom()` e o número de bytes lidos
-
-## Extra (opcional)
-
-- Adicione checksum XOR no fim do pacote (como no capstone) e valide no parser
-- Calcule a norma da aceleração (`sqrt(ax² + ay² + az²)`) e plote
-- Crie um contador de pacotes perdidos: compare `pckt` com o número de pacotes válidos
-- Use o [wokwi-cli](https://github.com/wokwi/wokwi-cli) para rodar a simulação e capturar o log sem abrir o navegador
-- Compile os chips localmente com `wokwi-cli chip compile bmp585.chip.c`
-
-## Critérios de aceite
-
-- [ ] Projeto no Wokwi com ESP32-S3 + os três chips personalizados, montado do zero
-- [ ] Chips Console mostra `BMP585 pronto`, `LSM6DS3 pronto` e `NEO-8M pronto`
-- [ ] Firmware lê os três sensores e envia pacotes a 10 Hz
-- [ ] Formato de 16 campos: `#51,millis,pckt,alt,temp,press,gx,gy,gz,ax,ay,az,gps_alt,lat,lon,sat`
-- [ ] `log_wokwi.txt` com pelo menos 5 minutos de simulação
-- [ ] `parser.py` gera `dados_tratados.csv` com cabeçalho e só pacotes válidos
-- [ ] Gráficos no Colab a partir do CSV tratado
-- [ ] README da semana com links do Wokwi e do Colab
-- [ ] Commit com tipo semântico
-
-## Entrega
-
-Dentro de `entregas/<seu-nome-sobrenome>/semana-09/`:
+## Arquitetura
 
 ```
-semana-09/
-├── README.md              # links do Wokwi/Colab + como rodar o parser
-├── sketch.ino             # copia do firmware usado no Wokwi
-├── log_wokwi.txt          # log serial cru (5+ min)
-├── parser.py              # parser + validador + geracao do CSV
-├── dados_tratados.csv     # saida do parser
-└── evidencias/
-    └── graficos.png       # (ou prints dos graficos)
+ESP32-C3 (20 Hz) → Serial USB → Python Receptor → CSV + Logs
+                                          ↓
+                                   Python Análise → Gráficos + Estatísticas
 ```
 
-## Perguntas para reflexão
+## Como Executar
 
-- Por que simular os sensores antes de montar o hardware físico?
-- O que muda entre o log real (`voo_thonyan.txt`) e o log gerado pelos chips simulados?
-- Por que o GPS atualiza a 1 Hz e o pacote sai a 10 Hz? O que o firmware faz nos 9 pacotes intermediários?
-- Como você validaria que o firmware não perde amostras?
-- Por que a altitude do barômetro e a do GPS não são iguais?
+### 1. Firmware (Arduino/PlatformIO)
+
+```bash
+# Arduino IDE
+# Abrir firmware/src/main.cpp
+# Selecionar: ESP32-C3 Super Mini
+# Upload
+
+# PlatformIO
+pio run -t upload
+```
+
+### 2. Receptor Python
+
+```bash
+pip install pyserial
+python receptor.py
+```
+
+### 3. Análise
+
+```bash
+python analise.py
+```
+
+## Resultados
+
+![Perfil de Voo](resultados/perfil_voo.png)
+
+| Métrica | Valor |
+|---------|-------|
+| Total de pacotes | 250 |
+| Válidos | 248 (99.2%) |
+| Inválidos | 2 (0.8%) |
+| Apogeu | 152.3m |
+| Taxa | 20 pkt/s |
+
+## Lições Aprendidas
+
+- O que foi mais difícil? [Resposta do aluno]
+- O que faria diferente? [Resposta do aluno]
+- Conexão com projetos reais: [Reflexão]
 
 ## Referências
 
-- [Chips personalizados do Wokwi](../../entregas/dados/wokwi-chips/README.md)
-- [Semana 1](semana-01.md) - análise no Colab
-- [Semana 2](semana-02.md) - parser e CSV tratado
-- [Semana 3](semana-03.md) - Arduino IDE / Wokwi
-- [Trilha Sensores e Protocolos](../trilhas/sensors.md)
-- [Documentação dos Custom Chips do Wokwi](https://docs.wokwi.com/chips-api/getting-started)
+- Flight Computer: https://github.com/ViniciusCMB/flight-computer
+- Helike: https://github.com/ViniciusCMB/satellite
+```
+
+## Estrutura de entrega
+
+```
+capstone/
+├── firmware/
+│   ├── src/
+│   │   └── main.cpp
+│   └── platformio.ini
+├── script/
+│   ├── receptor.py
+│   ├── analise.py
+│   └── requirements.txt
+├── dados/
+│   ├── telemetria.csv
+│   └── erros.log
+├── resultados/
+│   └── perfil_voo.png
+└── README.md
+```
+
+## Critérios de avaliação
+
+| Critério | Peso | Descrição |
+|---|---|---|
+| Pipeline funcional | 40% | Dado entra → dado sai → gráfico |
+| Qualidade do código | 25% | Organização, legibilidade, comments |
+| Documentação | 20% | README, gráfico, lições |
+| Organização | 15% | Estrutura de pastas, gitignore |
+
+Bonus (até +10%):
+- Checksum funcional (+3%)
+- Detecção de apogeu (+3%)
+- Testes automatizados (+2%)
+- Interface gráfica (+2%)
+
+## Perguntas para reflexão
+
+- O que você faria diferente se fosse para um voo real?
+- Como tornar o sistema mais robusto a falhas?
+- O que falta para esse pipeline virar o firmware de verdade do Flight Computer?
+- Como o FreeRTOS ajudaria在这个projeto?
+- Como integrar com LoRa em vez de serial?
+
+## Dicas
+
+- Comece simples (só altitude) e vá adicionando campos
+- Valide cada etapa antes de avançar
+- Documente problemas encontrados e como resolveu
+- Use os exemplos das trilhas como base
+
+## Referências
+
+- [Trilha Python](../trilhas/python.md)
+- [Trilha Arduino IDE](../trilhas/arduino-ide.md)
+- [Trilha PlatformIO](../trilhas/platformio.md)
+- [Trilha Arquitetura de Firmware](../trilhas/firmware-architecture.md)
 - [Slide deck](../slides/semana-09.html)
 - [Quiz](../quiz/semana-09.html)

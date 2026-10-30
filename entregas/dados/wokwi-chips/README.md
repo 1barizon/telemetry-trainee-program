@@ -1,6 +1,6 @@
 # Chips customizados do Wokwi - Onboard Computer
 
-Arquivos de **custom chips** do [Wokwi](https://wokwi.com/) que simulam os sensores do computador de bordo (ESP32-S3) descrito em `hardware.md`. São usados na [Semana 9](../../../docs/semanas/semana-09.md) do treinamento, em que a turma simula o firmware de telemetria sem precisar do hardware físico.
+Arquivos de **custom chips** do [Wokwi](https://wokwi.com/) que simulam os sensores do computador de bordo (ESP32-S3) descrito em `hardware.md`. São usados na [Semana 4](../../../docs/semanas/semana-04.md) do treinamento, em que a turma simula o firmware de telemetria sem precisar do hardware físico.
 
 Os chips são escritos na **Chips API** do Wokwi (C compilado para WebAssembly). Cada chip tem dois arquivos:
 
@@ -90,5 +90,5 @@ Baseado no `config.h` do firmware (ESP32-S3):
 - [Wokwi - Custom Chips](https://docs.wokwi.com/chips-api/getting-started)
 - [Wokwi - Chip Definition (JSON)](https://docs.wokwi.com/chips-api/chip-json)
 - [Wokwi - I2C API](https://docs.wokwi.com/chips-api/i2c) · [UART API](https://docs.wokwi.com/chips-api/uart) · [Attributes](https://docs.wokwi.com/chips-api/attributes)
-- [Semana 9 - Chips personalizados no Wokwi](../../../docs/semanas/semana-09.md)
+- [Semana 4 - Chips personalizados no Wokwi](../../../docs/semanas/semana-04.md)
 - `hardware.md` - documentação do computador de bordo

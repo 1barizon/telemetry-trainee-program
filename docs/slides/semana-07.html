@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Semana 07 — Flight Computer & Helike</title>
+  <title>Semana 07 — KiCad Básico</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.min.css">
   <style>
@@ -28,275 +28,227 @@
 
       <section>
         <h1>Semana 07</h1>
-        <h2>Flight Computer & Helike</h2>
-        <p class="subtitle">Arquitetura dos sistemas reais de telemetria</p>
+        <h2>KiCad Básico</h2>
+        <p class="subtitle">Design de PCB para telemetria</p>
       </section>
 
       <section>
         <h2>Objetivos de Aprendizado</h2>
         <ul>
-          <li>Entender arquitetura do Flight Computer (FC)</li>
-          <li>Conhecer o projeto Helike PocketQube</li>
-          <li>Compreender como a telemetria conecta os sistemas</li>
-          <li>Identificar oportunidades de contribuição</li>
+          <li>Entender o fluxo de trabalho do KiCad (Eeschema → Pcbnew)</li>
+          <li>Criar esquemático de MCU + sensor BMP280</li>
+          <li>Executar ERC (Electrical Rules Check)</li>
+          <li>Layout básico de PCB</li>
+          <li>Exportar PDF e Gerber para fabricação</li>
         </ul>
       </section>
 
       <section>
-        <h2>O que é o Flight Computer?</h2>
-        <p>O Flight Computer (FC) é o cérebro do foguete/satélite:</p>
+        <h2>Visão Geral do KiCad</h2>
+        <p>KiCad é um suite EDA open-source com 5 ferramentas principais:</p>
         <ul>
-          <li>Processador: ESP32-S3 (Flight Computer) / ESP32-C3 (Helike)</li>
-          <li>Sensores: barômetro (BMP585/BME280), IMU (LSM6DS3/ICM-20602), GPS (NEO-8M)</li>
-          <li>Atuadores: servo para paraquedas, buzzers, LEDs</li>
-          <li>Comunicação: LoRa (rádio), XBee, WiFi (solo)</li>
-          <li>Armazenamento: cartão SD para log de voo</li>
-          <li>Bateria: LiPo 2S-4S com BMS</li>
+          <li><strong>Eeschema</strong> — editor de esquemáticos</li>
+          <li><strong>Pcbnew</strong> — editor de PCB layout</li>
+          <li><strong>Symbol Editor</strong> — criar/editar símbolos</li>
+          <li><strong>Footprint Editor</strong> — criar/editar footprints</li>
+          <li><strong>GerbView</strong> — visualizar Gerbers</li>
         </ul>
+        <p>Fluxo: Esquemático → Anotação → Associação de footprints → PCB → Gerber</p>
       </section>
 
       <section>
-        <h2>Arquitetura do FC</h2>
-        <pre><code class="language-text">┌─────────────────────────────────────────────────┐
-│              FLIGHT COMPUTER (FC)                 │
-│            ESP32-S3 · dual-core 240MHz            │
-│                                                   │
-│  ┌──────────┐  I2C  ┌──────────┐  I2C  ┌───────┐ │
-│  │  BMP585  │◄──────┤  LSM6DS3 │◄──────┤  GPS  │ │
-│  │ (baro)   │       │ (IMU)    │       │ NEO-8M│ │
-│  └──────────┘       └──────────┘       └───────┘ │
-│       │                  │                 │      │
-│       └──────────────────┴─────────────────┘      │
-│                          │ I2C/SPI                │
-│                     ┌────┴────┐                   │
-│                     │  MCU    │─── SPI ──► LoRa   │
-│                     │ESP32-S3 │─── SPI ──► SD     │
-│                     └────┬────┘                   │
-│                     ┌────┴────┐                   │
-│                     │ BATERIA │                   │
-│                     │ LiPo 2S │                   │
-│                     └─────────┘                   │
-└─────────────────────────────────────────────────┘</code></pre>
+        <h2>Criando um Projeto</h2>
+        <pre><code class="language-text">projeto-telemetria/
+├── telemetria.kicad_pro    # Arquivo de projeto
+├── telemetria.kicad_sch    # Esquematico
+├── telemetria.kicad_pcb    # PCB Layout
+├── symbols/                # Simbolos personalizados
+├── footprints/             # Footprints personalizados
+└── fabrication/            # Saida Gerber/PDF</code></pre>
+        <p>No KiCad: File → New → Project → escolher pasta.</p>
       </section>
 
       <section>
-        <h2>FSM — Finite State Machine</h2>
-        <p>O FC opera em uma máquina de estados:</p>
-        <pre><code class="language-text">        ┌──────────┐
-        │  IDLE    │ (solo, aguardando ARM + lancamento)
-        └────┬─────┘
-             │ liftoff confirmado (acc > 15 m/s² por 100ms)
-        ┌────▼─────┐
-        │  ASCENT  │ (subindo, motor + balistico)
-        └────┬─────┘
-             │ apogeu (|vz| < 1.0 m/s) + paraquedas
-        ┌────▼─────┐
-        │ DESCENT  │ (descendo com paraquedas)
-        └────┬─────┘
-             │ pouso (|vz| < 0.5 m/s & alt < 2m)
-        ┌────▼─────┐
-        │  LANDED  │ (log final, beacon de recuperacao)
-        └──────────┘
-
-  FC: 4 estados + 7 sub-event flags
-  Helike: sem FSM (liga ja descendo)</code></pre>
-      </section>
-
-      <section>
-        <h2>Telemetria no FC</h2>
-        <p>O FC transmite pacotes de telemetria a cada ~200ms (5 Hz):</p>
-        <pre><code class="language-cpp">// Formato real: 22 campos CSV (FC) / 18 campos CSV (Helike)
-// Exemplo FC: #11,12345,1,250.3,101325,22.5,9.81,0.1,-0.3,...
-// Exemplo Helike: #213,12345,1,250.3,22.5,65,101325,...#
-
-// Pacote FC (simplificado):
-// team_id, millis, state, altitude, pressure, temperature,
-// accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,
-// gps_lat, gps_lon, gps_alt, gps_sat, ...
-
-// Pacote Helike (18 campos):
-// team_id, millis, count, altp, temp, umidade, pressao,
-// gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z,
-// alt_baro, lat, lon, sat, rssi#</code></pre>
-      </section>
-
-      <section>
-        <h2>Helike PocketQube</h2>
-        <p>Helike é um satélite PocketQube (5×5×5 cm) da Serra Rocketry:</p>
+        <h2>Eeschema — Esquemático MCU + Sensor</h2>
+        <p>Componentes principais de um nó de telemetria:</p>
         <ul>
-          <li>Formato: PocketQube 1P (5cm³) — ultra-compacto</li>
-          <li>Missão: SRAB (Sistema de Recuperação e Aterrissagem do Bob)</li>
-          <li>Competição: LASC 2026 (Latin American Space Challenge)</li>
-          <li>MCU: ESP32-C3 SuperMini (single-core RISC-V, 160MHz)</li>
-          <li>Comunicação: LoRa 915 MHz (RFM95W)</li>
-          <li>Plataforma: PlatformIO com testes nativos (Unity)</li>
+          <li>Microcontrolador (ATmega328P, RP2040, STM32)</li>
+          <li>Sensor BMP280 (I2C)</li>
+          <li>Conector USB (alimentação + dados)</li>
+          <li>Regulador de tensão 3.3V</li>
+          <li>Capacitores de desacoplamento</li>
+          <li>Resistores de pull-up I2C</li>
+          <li>Conector para bateria LiPo</li>
         </ul>
       </section>
 
       <section>
-        <h2>CDB — Command & Data Base</h2>
-        <p>O CDB define todos os parâmetros, comandos e formatos:</p>
-        <pre><code class="language-text">CDB define:
-- IDs de cada pacote telemetrico
-- Formatos de comando (TC)
-- Formatos de telemetria (TM)
-- Limites operacionais
-- Tabela de calibracao dos sensores
+        <h2>Adicionando Componentes</h2>
+        <pre><code class="language-text">Tecla de atalho: 'A' (Add Symbol)
 
-Exemplo de entrada CDB:
-TM_ID=0x01  PACOTE_ESTADO
-  timestamp : uint32_t  (ms)
-  state     : uint8_t   (FSM state)
-  altitude  : float     (m)
-  temp_bat  : float     (Celsius)
-  voltage   : float     (V)
-
-TC_ID=0xA0  COMANDO_RESET
-  magic     : uint16_t  (0x5A5A)
-  delay_ms  : uint32_t  (ms ate reset)</code></pre>
+Buscar e colocar:
+- ATmega328P_PDIP        (MCU)
+- BMP280                  (sensor pressao)
+- USB_B_Micro             (conector USB)
+- LM1117-3.3              (regulador)
+- C_Small (100nF, 10uF)  (capacitores)
+- R_Small (4k7)          (pull-ups I2C)
+- CONN_01x02              (bateria)</code></pre>
+        <p>Use fios (wire) para conectar os pinos.</p>
       </section>
 
       <section>
-        <h2>LoRa — Rádio Comunicação</h2>
-        <p>LoRa (Long Range) é o link de rádio do Helike:</p>
+        <h2>Exemplo de Conexões I2C</h2>
+        <pre><code class="language-text">                       3.3V
+                        │
+                    ┌───┤
+                    │   │
+                  4k7  4k7
+                    │   │
+                    │   └──────────┐
+                    │              │
+  MCU               │              │     BMP280
+┌──────┐          ┌─┴─┐         ┌─┴──┐
+│ SDA  │──────────┤   ├─────────┤ SDA│
+│ SCL  │──────────┤   ├─────────┤ SCL│
+│ VCC  │───3.3V   │   │         │ VCC│───3.3V
+│ GND  │───GND    │   │         │ GND│───GND
+└──────┘          └───┘         └────┘</code></pre>
+        <p>I2C precisa de pull-ups (4k7) para SDA e SCL.</p>
+      </section>
+
+      <section>
+        <h2>ERC — Electrical Rules Check</h2>
+        <p>Antes de passar para PCB, verifique o esquemático:</p>
         <ul>
-          <li>Frequência: 915 MHz (ISM band — Brasil/Americas)</li>
-          <li>Alcance: até 10 km (solo) / 15+ km (foguete)</li>
-          <li>Configuração: SF7, BW 125 kHz, CR 4/5, CRC on</li>
-          <li>Potência: +17 dBm (FC) / +20 dBm (Helike)</li>
-          <li>Sincronização: Sync Word 0xF3 (compatível entre projetos)</li>
+          <li>Menu: Inspect → Electrical Rules Check</li>
+          <li>Verifica conexões soltas, pinos não conectados, conflitos</li>
+          <li>Corrija todos os erros (bandeiras vermelhas)</li>
+          <li>Avisos (amarelos) podem ser aceitos se justificados</li>
         </ul>
-        <pre><code class="language-cpp">// Configuracao LoRa real (915 MHz, SF7)
-#include &lt;LoRa.h&gt;
-
-void setup() {
-  LoRa.setPins(SS, RST, DIO0);
-  LoRa.begin(915E6);              // 915 MHz (Brasil)
-  LoRa.setSpreadingFactor(7);     // SF7 (baixa latencia)
-  LoRa.setCodingRate4(5);         // CR 4/5
-  LoRa.setTxPower(17);            // +17 dBm (FC)
-  LoRa.enableCrc();               // CRC habilitado
-}</code></pre>
+        <pre><code class="language-text">Exemplo de erros comuns:
+- Erro: Pino VCC do BMP280 nao conectado
+- Erro: Saida SDA em curto com GND
+- Aviso: Resistores de pull-up ausentes no I2C</code></pre>
+        <p class="objective">ERC zero erros antes de ir para o layout!</p>
       </section>
 
       <section>
-        <h2>SRAB — Sistema de Recuperação</h2>
-        <p>SRAB (Sistema de Recuperação e Aterrissagem do Bob):</p>
+        <h2>Associando Footprints</h2>
+        <p>Cada símbolo precisa de um footprint (forma física no PCB):</p>
+        <pre><code class="language-text">Menu: Tools → Assign Footprints
+
+Exemplos:
+- ATmega328P → DIP-28_W7.62mm
+- BMP280 → LGA-8_2x2.5mm_P0.65mm
+- 100nF → C_0805
+- 4k7 → R_0805
+- USB → USB_Micro-B_GCT
+- Regulador → SOT-223</code></pre>
+        <p>Use o filtro de busca para encontrar o footprint correto.</p>
+      </section>
+
+      <section>
+        <h2>Pcbnew — Layout Básico</h2>
+        <p>Princípios de um bom layout:</p>
         <ul>
-          <li>Atuador: servo motor para liberação do paraquedas</li>
-          <li>Acionado pela FSM quando apogeu é detectado</li>
-          <li>Critérios: altitude decrescente por N amostras consecutivas</li>
-          <li>Redundância: timer de segurança (watchdog)</li>
-        </ul>
-        <pre><code class="language-cpp">void check_apogee(float altitude) {
-  static float alt_max = 0;
-  static int amostras_descendo = 0;
-
-  if (altitude > alt_max) {
-    alt_max = altitude;
-    amostras_descendo = 0;
-  } else {
-    amostras_descendo++;
-  }
-
-  // Apogeu confirmado apos 10 amostras descendo
-  if (amostras_descendo >= 10 && estado == COAST) {
-    estado = DROGUE;
-    servo.write(180);  // libera paraquedas
-    log_event("APOGEE_DETECTED");
-  }
-}</code></pre>
-      </section>
-
-      <section>
-        <h2>Como a Telemetria se Conecta</h2>
-        <pre><code class="language-text">      SPACE SEGMENT                    GROUND SEGMENT
-┌──────────────────────┐        ┌──────────────────────────┐
-│  Helike PocketQube   │        │   Estacao de Solo        │
-│                      │ LORA   │                          │
-│  ┌────┐    ┌──────┐  │◄──────►│  ┌──────┐  ┌─────────┐  │
-│  │ FC │───►│ LoRa │  │        │  │ LoRa │─►│ Python  │  │
-│  │    │    │ RFM95W│  │        │  │ RFM95W│  │ Parsing │  │
-│  │ FSM│    └──────┘  │        │  └──────┘  │ Valid.  │  │
-│  │ TM │              │        │            │ Log CSV │  │
-│  └────┘              │        │            │ Graf.   │  │
-│                      │        │            └─────────┘  │
-└──────────────────────┘        └──────────────────────────┘
-          ▲                               ▲
-          │     Semanas 01-02             │
-          │     Semanas 03-05             │
-          └───────────────────────────────┘</code></pre>
-        <p>Tudo que você aprendeu se conecta aqui!</p>
-      </section>
-
-      <section>
-        <h2>Pipeline Completo de Telemetria</h2>
-        <pre><code class="language-text">SENSORES
-  │
-  ▼
-FIRMWARE (FC — Arduino IDE / Helike — PlatformIO)
-  │ coleta, formata, checksum
-  ▼
-LINK (LoRa / Serial USB)
-  │ transmissão
-  ▼
-GROUND STATION (Python)
-  │ parsing, validação, log
-  ▼
-ANÁLISE (Python + matplotlib)
-  │ gráficos, estatísticas
-  ▼
-VISUALIZAÇÃO (Dashboards, relatórios)
-  │
-  ▼
-TOMADA DE DECISÃO (próximo lançamento)</code></pre>
-      </section>
-
-      <section>
-        <h2>Oportunidades de Contribuição</h2>
-        <p>Áreas onde você pode contribuir:</p>
-        <ul>
-          <li><strong>Firmware:</strong> drivers de sensores, FSM, controle</li>
-          <li><strong>Python:</strong> pipeline de telemetria, dashboards em tempo real</li>
-          <li><strong>Hardware:</strong> design de PCB, montagem, testes</li>
-          <li><strong>LoRa:</strong> protocolo de comunicação, otimização de link</li>
-          <li><strong>CDB:</strong> definição de parâmetros e comandos</li>
-          <li><strong>Testes:</strong> validação de hardware, simulações</li>
-          <li><strong>Documentação:</strong> manuais, wiki, relatórios de voo</li>
-          <li><strong>SRAB:</strong> algoritmo de detecção de apogeu</li>
+          <li>Capacitores de desacoplamento o mais próximo possível do pino VCC</li>
+          <li>Planos de GND contínuos (evitar rasgos)</li>
+          <li>I2C tracks curtas e paralelas (SDA + SCL)</li>
+          <li>Separar parte analógica da digital</li>
+          <li>Evitar ângulos de 90 nos traces (usar 45)</li>
+          <li>Largura do trace: sinal 0.25mm, power 0.5mm+</li>
         </ul>
       </section>
 
       <section>
-        <h2>Como Começar a Contribuir</h2>
-        <ol>
-          <li>Escolha uma área de interesse</li>
-          <li>Leia o código existente no repositório</li>
-          <li>Pegue uma issue marcada como "good first issue"</li>
-          <li>Discuta no Discord antes de implementar</li>
-          <li>Abra um draft PR para feedback early</li>
-          <li>Itere com os revisores</li>
-        </ol>
-        <p class="objective">Não precisa saber tudo — a gente aprende junto.</p>
+        <h2>Roteamento Básico</h2>
+        <pre><code class="language-text">Teclas uteis no Pcbnew:
+'X' — iniciar roteamento (add track)
+'V' — via
+'R' — rotacionar componente
+'F' — flip para lado oposto
+'M' — mover
+'Delete' — remover track
+
+Camadas tipicas:
+F.Cu (Top) — componentes e sinais
+B.Cu (Bottom) — GND plane (ou sinais)
+Edge.Cuts — contorno da placa</code></pre>
       </section>
 
       <section>
-        <h2>Repositórios</h2>
-        <ul>
-          <li><strong>Flight Computer:</strong> github.com/ViniciusCMB/flight-computer</li>
-          <li><strong>Helike (Satellite):</strong> github.com/ViniciusCMB/satellite</li>
-          <li><strong>Documentação:</strong> docs/software.md e docs/hardware.md em cada repo</li>
-        </ul>
+        <h2>Plano de GND e Power</h2>
+        <p>Use zonas de cobre para alimentação e GND:</p>
+        <pre><code class="language-text">1. Selecione a camada B.Cu
+2. Menu: Place → Zone (ou 'Ctrl+Z')
+3. Clique no contorno da placa
+4. Net: GND
+5. Preferencias: Thermal relief = none
+6. Clique em 'Fill All Zones' (B)
+
+Repita para 3.3V na camada F.Cu (se houver espaço)</code></pre>
+        <p>Zonas de GND reduzem ruído e melhoram a integridade do sinal.</p>
+      </section>
+
+      <section>
+        <h2>DRC — Design Rules Check</h2>
+        <p>Verifica se o layout respeita as regras de fabricação:</p>
+        <pre><code class="language-text">Menu: Inspect → Design Rules Check
+
+Regras comuns (default):
+- Clearance: 0.25mm (min entre trilhas)
+- Track width: 0.25mm (min)
+- Via size: 0.6mm (min)
+- Via drill: 0.3mm (min)
+- Anular ring: 0.15mm (min)
+
+Ajuste em: File → Board Setup → Design Rules</code></pre>
+        <p>DRC zero erros antes de exportar!</p>
+      </section>
+
+      <section>
+        <h2>Exportação — PDF e Gerber</h2>
+        <p><strong>PDF do esquemático:</strong></p>
+        <pre><code class="language-text">Eeschema → File → Plot → Formato PDF → Plotar</code></pre>
+        <p><strong>Gerber (fabricação):</strong></p>
+        <pre><code class="language-text">Pcbnew → File → Fabrication → Gerbers
+
+Camadas necessarias:
+- F.Cu, B.Cu (cobre)
+- F.Mask, B.Mask (mascara solda)
+- F.Silkscreen, B.Silkscreen (serigrafia)
+- Edge.Cuts (contorno)
+- Drill (.drl file)</code></pre>
+        <p>Envie o .zip dos Gerbers para JLCPCB, PCBWay, etc.</p>
+      </section>
+
+      <section>
+        <h2>Exemplo: Placa de Telemetria</h2>
+        <pre><code class="language-text">┌──────────────────────────────────────┐
+│  ┌────────────────────────────────┐   │
+│  │   [ANTENA]    [USB]            │   │
+│  │   ┌──────┐                    │   │
+│  │   │ MCU  │──┐                 │   │
+│  │   │      │  ├── I2C ── BMP280 │   │
+│  │   │      │  │                 │   │
+│  │   │      │  ├── UART ── LoRa  │   │
+│  │   └──────┘  │                 │   │
+│  │              └── SPI  ── SD   │   │
+│  │  [REG 3.3V]    [BATERIA]      │   │
+│  └────────────────────────────────┘   │
+│          [4 parafusos M3]             │
+└──────────────────────────────────────┘</code></pre>
       </section>
 
       <section>
         <h2>Exercícios</h2>
         <ol>
-          <li>Mapear a FSM do Flight Computer (desenho ou texto)</li>
-          <li>Identificar 3 diferenças entre o FC e o Helike</li>
-          <li>Escolher uma área de contribuição e escrever plano</li>
-          <li>Simular uma transmissão LoRa (Python + rádio virtual)</li>
-          <li>Analisar um log de voo real (fornecido pelos mentores)</li>
+          <li>Criar projeto KiCad e esquemático MCU + BMP280</li>
+          <li>Adicionar capacitores de desacoplamento e pull-ups I2C</li>
+          <li>Executar ERC e corrigir todos os erros</li>
+          <li>Layout PCB com roteamento básico e plano de GND</li>
+          <li>Executar DRC e exportar PDF + Gerber</li>
         </ol>
         <p class="objective">Entregar via PR até domingo.</p>
       </section>
@@ -304,14 +256,14 @@ TOMADA DE DECISÃO (próximo lançamento)</code></pre>
       <section>
         <h2>Resumo & Conclusão</h2>
         <ul>
-          <li>Flight Computer: MCU + sensores + FSM + telemetria</li>
-          <li>Helike PocketQube: satélite 1P com CDB e LoRa</li>
-          <li>SRAB: sistema de recuperação por paraquedas</li>
-          <li>Telemetria conecta firmware → rádio → solo → análise</li>
-          <li>Múltiplas oportunidades de contribuição real</li>
+          <li>Fluxo KiCad: esquemático → footprints → PCB → Gerber</li>
+          <li>Esquemático MCU + sensor BMP280 criado</li>
+          <li>ERC e regras de design compreendidas</li>
+          <li>Layout PCB com boas práticas de roteamento</li>
+          <li>Exportação PDF (docs) e Gerber (fabricação)</li>
         </ul>
-        <p>Você já tem as ferramentas para contribuir com projetos reais.</p>
-        <p class="subtitle">Próximo passo: Semana 08 — Capstone</p>
+        <p>KiCad é essencial para projetar hardware de telemetria.</p>
+        <p class="subtitle">Próximo passo: Semana 08 — Flight Computer & Helike</p>
       </section>
 
     </div>

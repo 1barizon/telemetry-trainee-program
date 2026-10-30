@@ -229,7 +229,7 @@ File → Plot → esquema em PDF (para documentação e revisão).
 
 ## Entregas relacionadas
 
-- [Semana 6](../semanas/semana-06.md): Esquemático + ERC + exportação
+- [Semana 7](../semanas/semana-07.md): Esquemático + ERC + exportação
 
 ## Critérios de aceite
 

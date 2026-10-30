@@ -40,7 +40,7 @@ h1 { font-size: 28px; margin-bottom: 8px; }
 </head>
 <body>
 <div class="quiz-container">
-  <h1>Quiz — Semana 7: Flight Computer &amp; Helike</h1>
+  <h1>Quiz — Semana 7: KiCad</h1>
   <p class="subtitle">Selecione as respostas. O feedback é imediato.</p>
 
   <div class="score-bar" id="scoreBar">
@@ -56,14 +56,14 @@ h1 { font-size: 28px; margin-bottom: 8px; }
 
 <script>
 const questions = [
-  { q: 'Em uma FSM (Finite State Machine) de voo, qual estado normalmente vem depois do ASCENT?', type: 'mc', options: ['a) IDLE', 'b) DESCENT', 'c) LANDED', 'd) BOOT'], correct: 1, explanation: '' },
-  { q: 'Liste os estados típicos de uma FSM de voo de foguete e descreva brevemente cada um.', type: 'short', options: [], correct: 'IDLE (aguardando inicialização/lançamento), ASCENT (subindo), DESCENT (descendo, após apogeu), LANDED (pousado, detectado por impacto ou ausência de movimento).' },
-  { q: 'No barramento I2C, é possível conectar múltiplos sensores no mesmo barramento, desde que cada um tenha um endereço único.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
-  { q: 'Qual faixa de frequência o LoRa normalmente utiliza para comunicação em telemetria amadora no Brasil?', type: 'mc', options: ['a) 2.4 GHz', 'b) 915 MHz', 'c) 433 MHz ou 868 MHz', 'd) 5.8 GHz'], correct: 1, explanation: 'No Brasil, a faixa ISM de 915 MHz é a utilizada pelos projetos Flight Computer e Helike. 433 MHz e 868 MHz são utilizadas em outras regiões (Europa/Ásia).' },
-  { q: 'O formato PocketQube tem dimensões padronizadas de 5×5×5 cm por unidade (1P).', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
-  { q: 'Qual sistema de arquivos é mais adequado para armazenar dados de voo em um microcontrolador com memória flash interna?', type: 'mc', options: ['a) FAT32 em cartão SD', 'b) LittleFS na flash interna', 'c) NTFS', 'd) ext4'], correct: 1, explanation: '' },
-  { q: 'Por que o LittleFS é preferível ao SD card convencional em aplicações de voo?', type: 'short', options: [], correct: 'LittleFS é mais robusto contra vibração e quedas de energia (sem partes móveis), tem menor consumo energético e não requer hardware adicional (slot de SD).' },
-  { q: 'O estado LANDED de uma FSM de voo é ativado quando o foguete atinge o apogeu.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 1, explanation: 'o estado LANDED é ativado após o pouso (detecção de impacto ou velocidade zero sustentada), não no apogeu. Apogeu marca a transição ASCENT → DESCENT.' }
+  { q: 'O que as regras ERC (Electrical Rules Check) verificam?', type: 'mc', options: ['a) Se a placa cabe no gabinete', 'b) Se as conexões elétricas no esquemático estão corretas (ex.: saídas conectadas a saídas)', 'c) Se os footprints estão centralizados', 'd) Se o custo dos componentes está dentro do orçamento'], correct: 1, explanation: '' },
+  { q: 'O schematic (esquemático) define as conexões lógicas entre componentes; o PCB define o layout físico.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
+  { q: 'Explique a diferença entre footprint e symbol no KiCad.', type: 'short', options: [], correct: 'Symbol é a representação gráfica do componente no esquemático (lógica). Footprint é a representação física na PCB (padrão de solda, dimensões, furos).' },
+  { q: 'Qual formato de arquivo é usado para fabricar as camadas de uma PCB?', type: 'mc', options: ['a) PDF', 'b) PNG', 'c) Gerber (RS-274X)', 'd) SVG'], correct: 2, explanation: '' },
+  { q: 'Um copper pour (preenchimento de cobre) conectado ao GND ajuda a reduzir ruído e simplificar o roteamento.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
+  { q: 'Qual é a função de um capacitor de desacoplamento (decoupling capacitor)?', type: 'mc', options: ['a) Amplificar o sinal', 'b) Filtrar ruídos de alta frequência na alimentação de um CI', 'c) Armazenar energia por longos períodos', 'd) Substituir a bateria principal'], correct: 1, explanation: '' },
+  { q: 'Por que capacitores de desacoplamento devem ser colocados o mais próximo possível dos pinos de alimentação do CI?', type: 'short', options: [], correct: 'Quanto mais próximo do pino, menor a indutância do traço, melhorando a eficácia do filtro contra ruídos de alta frequência.' },
+  { q: 'O que é uma "net class" no KiCad?', type: 'mc', options: ['a) Um agrupamento de componentes', 'b) Uma regra de espaçamento e largura de trilha para um grupo de nets', 'c) Um tipo de footprint', 'd) Uma biblioteca de simbolos'], correct: 1, explanation: '' }
 ];
 
 let userAnswers = {};

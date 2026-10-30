@@ -1,19 +1,18 @@
-# Semana 8 - Capstone
+# Semana 8 - Contexto dos projetos (FC + Helike)
 
 ## Objetivo
 
-Integrar tudo em um pipeline simples.
+Documentar entendimento dos projetos.
 
 ## Tarefas
 
-- [ ] Pipeline end-to-end: gerar → transmitir → parsear → logar
-- [ ] README final com licoes aprendidas
+- [ ] Resumo tecnico do Flight Computer
+- [ ] Resumo tecnico do Helike
+- [ ] Mapa conceitual (FSM + Telemetria + Power)
 
 ## Criterios de aceite
 
-- [ ] Pipeline funcional
-- [ ] README com reproducao
+- [ ] Resumos claros
+- [ ] Mapa conceitual legivel
 
 ## Referencias
-
-- [roadmap](../roadmap.md)

@@ -1,21 +1,20 @@
-# Semana 5 - Integracao Arduino ↔ Python
+# Semana 5 - PlatformIO
 
 ## Objetivo
 
-Receber dados da serial e gerar log.
+Organizar o projeto no PlatformIO.
 
 ## Tarefas
 
-- [ ] Arduino envia pacotes periodicos
-- [ ] Python recebe, parseia e loga
+- [ ] Migrar projeto da semana 3 para PlatformIO
+- [ ] Organizar estrutura de pastas
 
 ## Criterios de aceite
 
-- [ ] Dados recebidos sem travar
-- [ ] Log estruturado
+- [ ] Build sem erros
 - [ ] README atualizado
 
 ## Referencias
 
-- [Trilha Python](../trilhas/python.md)
-- [Trilha Arduino IDE](../trilhas/arduino-ide.md)
+- [Trilha PlatformIO](../trilhas/platformio.md)
+- [Exemplo PlatformIO](../examples/platformio-exemplo.md)

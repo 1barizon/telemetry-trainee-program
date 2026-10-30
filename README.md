@@ -6,7 +6,7 @@ Repositório de treinamento do time de telemetria, com trilhas, semanas e entreg
 
 - [Guia do Aluno](docs/guia-do-aluno.md)
 - [Padrão de Entregas](docs/padrao-entregas.md)
-- [Roadmap do Treinamento (9 semanas)](docs/roadmap.md)
+- [Roadmap do Treinamento (10 semanas)](docs/roadmap.md)
 - [Calendario](docs/calendario.md)
 - [Pagina inicial (GitHub Pages)](docs/index.md)
 - [Mapa Geral](docs/mapa-geral.md)
@@ -33,12 +33,12 @@ Repositório de treinamento do time de telemetria, com trilhas, semanas e entreg
 | 1 | Python básico (Colab) | pandas + gráficos |
 | 2 | Python aplicado | Parser + validação |
 | 3 | Arduino IDE | Blink + sensor + serial |
-| 4 | PlatformIO | Migração + testes |
-| 5 | Integração | Arduino ↔ Python |
-| 6 | KiCad | Esquemático + ERC |
-| 7 | Projetos reais | Resumo FC + Helike |
-| 8 | Capstone | Pipeline end-to-end |
-| 9 | Chips personalizados no Wokwi | Simulação do computador de bordo |
+| 4 | Chips personalizados no Wokwi | Simulação do computador de bordo |
+| 5 | PlatformIO | Migração + testes |
+| 6 | Integração | Arduino ↔ Python |
+| 7 | KiCad | Esquemático + ERC |
+| 8 | Projetos reais | Resumo FC + Helike |
+| 9 | Capstone | Pipeline end-to-end |
 
 ## Padrões de entrega
 

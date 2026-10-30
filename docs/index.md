@@ -5,7 +5,7 @@ Bem-vindo ao treinamento do time de telemetria e controle da Serra Rocketry.
 ## Comece aqui
 
 - [Guia do Aluno](guia-do-aluno.md)
-- [Roadmap do Treinamento (9 semanas)](roadmap.md)
+- [Roadmap do Treinamento (10 semanas)](roadmap.md)
 - [Diagrama das Semanas](diagrama-semanas.html)
 - [Calendário](calendario.md)
 - [Visão Geral](visao-geral.md)

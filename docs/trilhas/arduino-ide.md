@@ -467,7 +467,8 @@ GPIO 21 → RX_GPS      (UART TX)
 ## Entregas relacionadas
 
 - [Semana 3](../semanas/semana-03.md): Blink + sensor + pacote serial
-- [Semana 5](../semanas/semana-05.md): Integração Arduino ↔ Python
+- [Semana 4](../semanas/semana-04.md): Chips personalizados no Wokwi (sensores do Flight Computer)
+- [Semana 6](../semanas/semana-06.md): Integração Arduino ↔ Python
 
 ## Critérios de aceite
 

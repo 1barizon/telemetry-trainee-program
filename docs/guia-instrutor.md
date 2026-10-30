@@ -87,7 +87,28 @@ Na revisão:
 - LED pisca independente?
 - Formato do pacote correto?
 
-## Semana 4 - PlatformIO
+## Semana 4 - Chips personalizados no Wokwi
+
+Mini-aula:
+- O que é um custom chip do Wokwi (`chip.json` + `chip.c`, Chips API)
+- Como adicionar um custom chip ao projeto e conferir o Chips Console
+- I2C por registradores (`Wire`) versus bibliotecas de sensor
+- UART e sentenças NMEA do GPS
+- Conversão pressão → altitude e o pacote de 16 campos
+
+Perguntas para discussão:
+- Por que simular os sensores antes de montar a placa?
+- Por que o chip simulado não funciona com a biblioteca do fabricante?
+- O que acontece nos pacotes entre duas atualizações do GPS?
+- Como validar que o firmware não está perdendo amostras?
+
+Na revisão:
+- Projeto montado do zero com os três chips e link compartilhado?
+- Pacotes a 10 Hz no formato de 16 campos?
+- Log com 5+ minutos e parser gerando `dados_tratados.csv`?
+- Gráficos no Colab e README com os links?
+
+## Semana 5 - PlatformIO
 
 Mini-aula:
 - Estrutura de projeto PlatformIO
@@ -104,7 +125,7 @@ Na revisão:
 - Testes nativos passam?
 - Organização correta das pastas?
 
-## Semana 5 - Integração
+## Semana 6 - Integração
 
 Mini-aula:
 - Comunicação serial bidirecional
@@ -120,7 +141,7 @@ Na revisão:
 - Parser reaproveitado da Semana 2?
 - CSV limpo + log de erros separado?
 
-## Semana 6 - KiCad
+## Semana 7 - KiCad
 
 Mini-aula:
 - Eeschema: símbolos, fios, labels, ERC
@@ -136,7 +157,7 @@ Na revisão:
 - Pull-ups I2C presentes?
 - PDF exportado?
 
-## Semana 7 - Projetos reais
+## Semana 8 - Projetos reais
 
 Mini-aula:
 - Arquitetura do Flight Computer (ESP32-S3, FreeRTOS, FSM)
@@ -159,7 +180,7 @@ Na revisão:
 - Mapa conceitual conecta semanas aos projetos?
 - Tabela comparativa está completa?
 
-## Semana 8 - Capstone
+## Semana 9 - Capstone
 
 Mini-aula:
 - Revisão geral dos conceitos
@@ -173,27 +194,6 @@ Avaliação:
 | Qualidade do código | 25% |
 | Documentação | 20% |
 | Organização | 15% |
-
-## Semana 9 - Chips personalizados no Wokwi
-
-Mini-aula:
-- O que é um custom chip do Wokwi (`chip.json` + `chip.c`, Chips API)
-- Como adicionar um custom chip ao projeto e conferir o Chips Console
-- I2C por registradores (`Wire`) versus bibliotecas de sensor
-- UART e sentenças NMEA do GPS
-- Conversão pressão → altitude e o pacote de 16 campos
-
-Perguntas para discussão:
-- Por que simular os sensores antes de montar a placa?
-- Por que o chip simulado não funciona com a biblioteca do fabricante?
-- O que acontece nos pacotes entre duas atualizações do GPS?
-- Como validar que o firmware não está perdendo amostras?
-
-Na revisão:
-- Projeto montado do zero com os três chips e link compartilhado?
-- Pacotes a 10 Hz no formato de 16 campos?
-- Log com 5+ minutos e parser gerando `dados_tratados.csv`?
-- Gráficos no Colab e README com os links?
 
 ## Checklist rápido do revisor
 

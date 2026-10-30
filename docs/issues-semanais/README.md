@@ -8,7 +8,7 @@ Exemplos de issues prontas para cada semana.
 - [Semana 1](issue-semana-01.md)
 - [Semana 2](issue-semana-02.md)
 - [Semana 3](issue-semana-03.md)
-- [Semana 4](issue-semana-04.md)
+- [Semana 4](issue-semana-04.md) - Chips personalizados no Wokwi
 - [Semana 5](issue-semana-05.md)
 - [Semana 6](issue-semana-06.md)
 - [Semana 7](issue-semana-07.md)

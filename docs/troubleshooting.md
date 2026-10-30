@@ -87,7 +87,34 @@ Solução: Substitua por `millis()` para controle de tempo não-bloqueante.
 
 ---
 
-## Semana 4 - PlatformIO
+## Semana 4 - Chips personalizados no Wokwi
+
+### Chip não aparece no Chips Console
+Causa: os arquivos `<nome>.chip.json` e `<nome>.chip.c` não foram substituídos pelos do repositório.  
+Solucao: confira o nome da pasta/chip (`bmp585`, `lsm6ds3`, `neo-8m`) e o conteudo dos dois arquivos. Os chips ficam em `entregas/dados/wokwi-chips/`.
+
+### "BMP585=AUSENTE" ou "LSM6DS3=AUSENTE" no boot
+Causa: chip personalizado nao adicionado ou pinos I2C trocados.  
+Solucao:
+1. Confirme que os dois custom chips I2C estao no diagrama
+2. Verifique SDA em GPIO 8 e SCL em GPIO 9
+3. Confira os enderecos `0x7E` (BMP585) e `0x6B` (LSM6DS3)
+
+### GPS sem fix (lat/lon em zero)
+Causa: o `GPGGA` ainda nao chegou ou a UART esta invertida.  
+Solucao: aguarde pelo menos 1 s, confira `Serial1.begin(9600, SERIAL_8N1, 17, 18)` e o TX/RX do NEO-8M.
+
+### Pacotes com `nan`
+Causa: `requestFrom()` retornou menos bytes que o esperado.  
+Solucao: confira o registrador lido, o numero de bytes e se o chip respondeu antes de converter o valor.
+
+### Parser rejeita todas as linhas
+Causa: pacote fora do formato esperado.  
+Solucao: o pacote deve comecar com `#51,` e ter exatamente 16 campos (sem terminador no fim). Linhas `[INFO]` e `[ERRO]` devem ser ignoradas.
+
+---
+
+## Semana 5 - PlatformIO
 
 ### "Please build the project first"
 Causa: Tentou fazer upload sem build.  
@@ -103,7 +130,7 @@ Solução: Adicione no topo de `src/main.cpp`.
 
 ---
 
-## Semana 5 - Integração
+## Semana 6 - Integração
 
 ### Python não encontra a porta serial
 Causa: Porta errada ou permissão.  
@@ -123,7 +150,7 @@ Solução: Aumente o timeout do serial ou diminua a taxa do ESP (10 Hz em vez de
 
 ---
 
-## Semana 6 - KiCad
+## Semana 7 - KiCad
 
 ### ERC acusa "Power pin not connected"
 Causa: Faltou PWR_FLAG na fonte.  
@@ -139,7 +166,7 @@ Solução: Preferences → Manage Symbol Libraries → carregue a biblioteca nec
 
 ---
 
-## Semana 7 e 8
+## Semana 8 e 9
 
 ### Não consegue acessar repositório do projeto
 Causa: Sem permissão ou repositório privado.  

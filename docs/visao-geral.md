@@ -27,7 +27,7 @@ O treinamento de telemetria da Serra Rocketry prepara novos membros para atuar n
 
 ## Estrutura do treinamento
 
-- 9 semanas de entregas progressivas
+- 10 semanas de entregas progressivas
 - 7 trilhas de conteúdo
 - Issues semanais com critérios claros
 - PRs revisados toda semana
@@ -36,5 +36,5 @@ O treinamento de telemetria da Serra Rocketry prepara novos membros para atuar n
 ## Onde começar
 
 - [Guia do Aluno](guia-do-aluno.md)
-- [Roadmap do Treinamento (9 semanas)](roadmap.md)
+- [Roadmap do Treinamento (10 semanas)](roadmap.md)
 - [Trilhas de Conteúdo](trilhas/README.md)

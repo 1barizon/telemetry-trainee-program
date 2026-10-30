@@ -1,483 +1,148 @@
-# Semana 8 - Capstone
+# Semana 8 - Contexto dos projetos (Flight Computer + Helike)
 
 ## Objetivo
 
-Integrar tudo que aprendeu em um pipeline end-to-end: Arduino gera dados → Python recebe, processa e analisa. Este é o momento de aplicar todo o conteúdo do núcleo do treinamento em um projeto funcional.
+Entender a arquitetura dos dois projetos principais do setor e identificar onde cada semana do treinamento se aplica.
 
 ## Preparação
 
 - [ ] Semanas 0 a 7 concluídas
-- [ ] ESP32-C3 + BMP280 montados na protoboard
+- [ ] Acesso aos repositórios `flight-computer` e `satellite`
 - [ ] Ver o [Slide deck](../slides/semana-08.html)
 - [ ] Fazer o [Quiz](../quiz/semana-08.html)
-- [ ] Revisar as trilhas de [Python](../trilhas/python.md), [Arduino](../trilhas/arduino-ide.md) e [PlatformIO](../trilhas/platformio.md)
+- [ ] Ler as trilhas de [Arquitetura de Firmware](../trilhas/firmware-architecture.md) e [Sensores](../trilhas/sensors.md)
 
 ## Problema
 
-Implemente um pipeline completo de telemetria com 4 fases, inspirado nos projetos reais.
+### Tarefa 1 - Resumo do Flight Computer
 
-### Fase 1 - Aquisição (Arduino)
+Explore o repositório do Flight Computer e responda por escrito:
 
-O ESP32-C3 deve funcionar como um mini Flight Computer:
+Arquitetura:
+- Qual o microcontrolador? (ESP32-S3, dual-core 240MHz)
+- Quais sensores? (BMP585, LSM6DS3, NEO-8M)
+- Quais interfaces? (I2C para sensores, SPI para LoRa+SD, UART para GPS)
+- Como o FreeRTOS organiza as tasks? (3 tasks em 2 cores)
 
-Hardware:
-- ESP32-C3 Super Mini
-- BMP280 (I2C, endereço 0x76)
-- LED (GPIO 1) como heartbeat
-- Buzzer (GPIO 0) para alertas
-- Botão (GPIO 2) para trigger manual
+FSM de voo:
+- Quais os 4 estados? (IDLE → ASCENT → DESCENT → LANDED)
+- Quais os 7 sub-event flags? (liftoff, burnout, apogeu, freefall, parachute)
+- Como o paraquedas é disparado? (apogeu + Vz negativa confirmada)
 
-Firmware:
-```cpp
-// main.cpp
-#include <Arduino.h>
-#include <Wire.h>
-#include <Adafruit_BMP280.h>
+Arquivo de configuração:
+- Estude `firmware/config.h` - quais parâmetros estão definidos?
+- Entenda os thresholds: `LIFTOFF_THRESHOLD`, `BURNOUT_THRESHOLD`, `PARACHUTE_MIN_ALTITUDE`
 
-#define LED_PIN 1
-#define BUZZER_PIN 0
-#define BUTTON_PIN 2
+Entregue um resumo de no máximo 1 página com:
+- Diagrama da arquitetura (Mermaid)
+- Tabela de hardware (componente, interface, função)
+- Fluxo de dados: sensor → processamento → armazenamento → transmissão
 
-Adafruit_BMP280 bmp;
-unsigned long lastSample = 0;
-const unsigned long INTERVAL = 50; // 20 Hz
+### Tarefa 2 - Resumo do Helike (satélite)
 
-float peakAltitude = 0;
-int apogeeCount = 0;
-bool apogeeDetected = false;
+Explore o repositório `satellite` e responda:
 
-void setup() {
-    Serial.begin(115200);
-    pinMode(LED_PIN, OUTPUT);
-    pinMode(BUZZER_PIN, OUTPUT);
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
-    
-    Wire.begin(8, 9); // SDA=GPIO8, SCL=GPIO9
-    
-    if (!bmp.begin(0x76)) {
-        Serial.println("ERRO:BMP280#");
-        while (1);
-    }
-    
-    Serial.println("BOOT OK#");
-}
+Plataforma:
+- Qual o formato? (PocketQube 1P)
+- Qual o microcontrolador? (ESP32-C3, single-core RISC-V)
+- Por que não usa FreeRTOS? (Satélite liga já descendo, loop simples)
 
-void loop() {
-    unsigned long now = millis();
-    
-    // LED heartbeat (1 Hz)
-    digitalWrite(LED_PIN, (now / 500) % 2);
-    
-    // Amostragem a 20 Hz
-    if (now - lastSample >= INTERVAL) {
-        lastSample = now;
-        
-        // Ler sensores
-        float alt = bmp.readAltitude(1013.25);
-        float temp = bmp.readTemperature();
-        float pres = bmp.readPressure() / 100.0F;
-        
-        // Simular acelerômetro (substitua por ICM-20602 real)
-        float ax = 0.01 + (random(-10, 10) / 1000.0);
-        float ay = 0.02 + (random(-10, 10) / 1000.0);
-        float az = 9.81 + (random(-50, 50) / 1000.0);
-        
-        // Calcular checksum (soma dos caracteres do payload)
-        char payload[128];
-        snprintf(payload, sizeof(payload), "%lu;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f",
-            now, alt, ax, ay, az, temp, pres);
-        
-        uint8_t checksum = 0;
-        for (int i = 0; payload[i] != 0; i++) {
-            checksum ^= payload[i];
-        }
-        
-        // Montar pacote completo
-        char packet[144];
-        snprintf(packet, sizeof(packet), "#%s;%02X#", payload, checksum);
-        Serial.println(packet);
-        
-        // Detectar apogeu (simplificado)
-        if (alt > peakAltitude) {
-            peakAltitude = alt;
-            apogeeCount = 0;
-        } else {
-            apogeeCount++;
-            if (apogeeCount >= 10 && !apogeeDetected) {
-                apogeeDetected = true;
-                digitalWrite(BUZZER_PIN, HIGH);
-                delay(200);
-                digitalWrite(BUZZER_PIN, LOW);
-                Serial.println("EVENT:APOGEE#");
-            }
-        }
-        
-        // Reset com botão
-        if (digitalRead(BUTTON_PIN) == LOW) {
-            peakAltitude = 0;
-            apogeeCount = 0;
-            apogeeDetected = false;
-            Serial.println("EVENT:RESET#");
-            delay(200); // debounce
-        }
-    }
-}
-```
+Organização:
+- Como o PlatformIO está configurado? (2 ambientes: helike_esp32c3 + native)
+- O que tem em `lib/calc/`? (VerticalVelocity, ApogeeDetection, DataValidation)
+- Como são os testes? (25 testes Unity em 3 módulos)
 
-Formato do pacote:
-```
-#timestamp;alt;ax;ay;az;temp;pres;checksum#
-Exemplo: #12345;150.25;0.01;0.02;9.81;25.3;1013.25;A3#
-```
+Sensores e comunicação:
+- Quais sensores? (BME280, ICM-20602, NEO-8M)
+- Qual a frequência do LoRa? (915 MHz, SF7, 125 kHz)
+- Como é o formato do pacote? (18 campos CSV + terminador '#')
 
-### Fase 2 - Recepção (Python)
+Entregue um resumo de no máximo 1 página com:
+- Diagrama do satélite (componentes principais)
+- Fluxo de dados: sensor → SD → LoRa → estação terrestre
+- Tabela de componentes
 
-Script que recebe, valida e armazena dados:
+### Tarefa 3 - Mapa conceitual
 
-```python
-#!/usr/bin/env python3
-"""receptor.py - Recebe pacotes do ESP32 via serial"""
-
-import serial
-import csv
-import time
-from datetime import datetime
-
-def parse_packet(line):
-    """Parse e valida pacote no formato #payload;checksum#"""
-    if not line.startswith('#') or not line.endswith('#'):
-        return None, "Formato inválido"
-    
-    content = line[1:-1]  # Remove # inicial e final
-    parts = content.split(';')
-    
-    if len(parts) != 7:
-        return None, "Número de campos inválido"
-    
-    try:
-        timestamp = int(parts[0])
-        altitude = float(parts[1])
-        ax = float(parts[2])
-        ay = float(parts[3])
-        az = float(parts[4])
-        temp = float(parts[5])
-        pres = float(parts[6])
-        checksum = parts[7] if len(parts) > 7 else None
-    except (ValueError, IndexError) as e:
-        return None, f"Erro de parsing: {e}"
-    
-    # Validar ranges físicos
-    if altitude < -100 or altitude > 10000:
-        return None, f"Altitude fora do range: {altitude}"
-    
-    g = (ax2 + ay2 + az2)  0.5
-    if g < 8.0 or g > 12.0:
-        return None, f"Aceleração fora do range: {g:.2f}g"
-    
-    if temp < -40 or temp > 85:
-        return None, f"Temperatura fora do range: {temp}"
-    
-    if pres < 300 or pres > 1200:
-        return None, f"Pressão fora do range: {pres}"
-    
-    # Verificar checksum
-    if checksum:
-        payload = ';'.join(parts[:7])
-        calc_checksum = 0
-        for c in payload:
-            calc_checksum ^= ord(c)
-        if f"{calc_checksum:02X}" != checksum:
-            return None, f"Checksum inválido"
-    
-    return {
-        'timestamp': timestamp,
-        'altitude': altitude,
-        'ax': ax, 'ay': ay, 'az': az,
-        'temp': temp,
-        'pres': pres
-    }, None
-
-def main():
-    ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
-    
-    valid_count = 0
-    invalid_count = 0
-    start_time = time.time()
-    
-    # Preparar arquivos
-    csv_file = open('dados/telemetria.csv', 'w', newline='')
-    csv_writer = csv.writer(csv_file)
-    csv_writer.writerow(['timestamp', 'altitude', 'ax', 'ay', 'az', 'temp', 'pres'])
-    
-    error_log = open('dados/erros.log', 'w')
-    
-    print("Aguardando pacotes...")
-    print("Pressione Ctrl+C para parar")
-    
-    try:
-        while True:
-            line = ser.readline().decode('utf-8', errors='ignore').strip()
-            if not line:
-                continue
-            
-            data, error = parse_packet(line)
-            
-            if data:
-                valid_count += 1
-                csv_writer.writerow([
-                    data['timestamp'], data['altitude'],
-                    data['ax'], data['ay'], data['az'],
-                    data['temp'], data['pres']
-                ])
-                
-                # Estatísticas a cada 50 pacotes
-                if valid_count % 50 == 0:
-                    elapsed = time.time() - start_time
-                    rate = valid_count / elapsed if elapsed > 0 else 0
-                    print(f"[{valid_count}] Válidos: {valid_count} | "
-                          f"Inválidos: {invalid_count} | "
-                          f"Taxa: {rate:.1f} pkt/s")
-            else:
-                invalid_count += 1
-                error_log.write(f"{datetime.now().isoformat()} | {line} | {error}\n")
-    
-    except KeyboardInterrupt:
-        print("\nEncerrando...")
-    finally:
-        csv_file.close()
-        error_log.close()
-        ser.close()
-        
-        # Relatório final
-        total = valid_count + invalid_count
-        print(f"\nRelatório:")
-        print(f"  Total: {total}")
-        print(f"  Válidos: {valid_count} ({100*valid_count/total:.1f}%)")
-        print(f"  Inválidos: {invalid_count} ({100*invalid_count/total:.1f}%)")
-
-if __name__ == '__main__':
-    main()
-```
-
-### Fase 3 - Análise (Python)
-
-Script que gera relatório e gráficos:
-
-```python
-#!/usr/bin/env python3
-"""analise.py - Analisa dados de telemetria coletados"""
-
-import csv
-import matplotlib.pyplot as plt
-import statistics
-
-def analyze_data(filename):
-    timestamps, altitudes, temps, pressures = [], [], [], []
-    
-    with open(filename) as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            timestamps.append(int(row['timestamp']) / 1000)  # ms → s
-            altitudes.append(float(row['altitude']))
-            temps.append(float(row['temp']))
-            pressures.append(float(row['pres']))
-    
-    # Encontrar apogeu
-    apogee_idx = altitudes.index(max(altitudes))
-    apogee_time = timestamps[apogee_idx]
-    apogee_alt = altitudes[apogee_idx]
-    
-    # Estatísticas
-    stats = {
-        'Altitude (m)': {
-            'Média': statistics.mean(altitudes),
-            'Máxima': max(altitudes),
-            'Mínima': min(altitudes),
-            'Std': statistics.stdev(altitudes) if len(altitudes) > 1 else 0
-        },
-        'Temperatura (°C)': {
-            'Média': statistics.mean(temps),
-            'Máxima': max(temps),
-            'Mínima': min(temps)
-        },
-        'Pressão (hPa)': {
-            'Média': statistics.mean(pressures),
-            'Máxima': max(pressures),
-            'Mínima': min(pressures)
-        }
-    }
-    
-    # Gráfico
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
-    
-    ax1.plot(timestamps, altitudes, 'b-', linewidth=2, label='Altitude')
-    ax1.axvline(x=apogee_time, color='r', linestyle='--', 
-                label=f'Apogeu: {apogee_alt:.1f}m')
-    ax1.set_xlabel('Tempo (s)')
-    ax1.set_ylabel('Altitude (m)')
-    ax1.set_title('Perfil de Voo')
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
-    
-    ax2.plot(timestamps, temps, 'r-', label='Temperatura')
-    ax2.plot(timestamps, pressures, 'g-', label='Pressão')
-    ax2.set_xlabel('Tempo (s)')
-    ax2.set_ylabel('Temperatura (°C) / Pressão (hPa)')
-    ax2.set_title('Ambiente')
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
-    
-    plt.tight_layout()
-    plt.savefig('resultados/perfil_voo.png', dpi=150)
-    
-    return stats, apogee_alt, apogee_time
-
-def main():
-    print("Analisando dados de telemetria...")
-    
-    stats, apogee_alt, apogee_time = analyze_data('dados/telemetria.csv')
-    
-    print(f"\n{'='*50}")
-    print(f"APOGEU: {apogee_alt:.1f}m em t={apogee_time:.1f}s")
-    print(f"{'='*50}\n")
-    
-    for campo, valores in stats.items():
-        print(f"{campo}:")
-        for nome, valor in valores.items():
-            print(f"  {nome}: {valor:.2f}")
-        print()
-    
-    print("Gráfico salvo em: resultados/perfil_voo.png")
-
-if __name__ == '__main__':
-    main()
-```
-
-### Fase 4 - Documentação
-
-README.md completo com:
-
-```markdown
-# Capstone - Pipeline de Telemetria
-
-## Visão Geral
-
-Pipeline end-to-end inspirado nos projetos Flight Computer e Helike da Serra Rocketry.
-
-## Arquitetura
+Desenhe um mapa (Mermaid, diagrama de blocos ou mesmo ASCII) que mostre:
 
 ```
-ESP32-C3 (20 Hz) → Serial USB → Python Receptor → CSV + Logs
-                                          ↓
-                                   Python Análise → Gráficos + Estatísticas
+SENSORES (I2C/SPI/UART)
+    ↓
+FIRMWARE (ESP32)
+    ├─→ FreeRTOS (Flight Computer) ou Loop simples (Helike)
+    ├─→ FSM de voo (apenas FC)
+    ├─→ Validação de dados (ambos)
+    ↓
+ARMAZENAMENTO (SD/LittleFS)  ──→  LORA (RFM95W)
+                                    ↓
+                               ESTAÇÃO TERRESTRE (Python)
 ```
 
-## Como Executar
+Indique onde cada semana do treinamento se aplica:
 
-### 1. Firmware (Arduino/PlatformIO)
+| Semana | Tema | Onde aparece nos projetos |
+|--------|------|---------------------------|
+| 0 | Setup & GitHub | Repositórios, issues, PRs |
+| 1 | Python CSV | Análise pós-voo, logs |
+| 2 | Python parser | Validação de pacotes |
+| 3 | Arduino GPIO | LED, buzzer, servo |
+| 4 | Chips no Wokwi | Sensores do Flight Computer simulados |
+| 5 | PlatformIO | Projeto Helike (completo) |
+| 6 | Integração Arduino↔Python | Telemetria em tempo real |
+| 7 | KiCad | PCB do CDB (Helike) |
+| 8 | Contexto reais | Esta semana |
+| 9 | Capstone | Pipeline end-to-end |
 
-```bash
-# Arduino IDE
-# Abrir firmware/src/main.cpp
-# Selecionar: ESP32-C3 Super Mini
-# Upload
+### Tarefa 4 - Comparação técnica
 
-# PlatformIO
-pio run -t upload
-```
+Crie uma tabela comparando os dois projetos:
 
-### 2. Receptor Python
-
-```bash
-pip install pyserial
-python receptor.py
-```
-
-### 3. Análise
-
-```bash
-python analise.py
-```
-
-## Resultados
-
-![Perfil de Voo](resultados/perfil_voo.png)
-
-| Métrica | Valor |
-|---------|-------|
-| Total de pacotes | 250 |
-| Válidos | 248 (99.2%) |
-| Inválidos | 2 (0.8%) |
-| Apogeu | 152.3m |
-| Taxa | 20 pkt/s |
-
-## Lições Aprendidas
-
-- O que foi mais difícil? [Resposta do aluno]
-- O que faria diferente? [Resposta do aluno]
-- Conexão com projetos reais: [Reflexão]
-
-## Referências
-
-- Flight Computer: https://github.com/ViniciusCMB/flight-computer
-- Helike: https://github.com/ViniciusCMB/satellite
-```
-
-## Estrutura de entrega
-
-```
-capstone/
-├── firmware/
-│   ├── src/
-│   │   └── main.cpp
-│   └── platformio.ini
-├── script/
-│   ├── receptor.py
-│   ├── analise.py
-│   └── requirements.txt
-├── dados/
-│   ├── telemetria.csv
-│   └── erros.log
-├── resultados/
-│   └── perfil_voo.png
-└── README.md
-```
-
-## Critérios de avaliação
-
-| Critério | Peso | Descrição |
-|---|---|---|
-| Pipeline funcional | 40% | Dado entra → dado sai → gráfico |
-| Qualidade do código | 25% | Organização, legibilidade, comments |
-| Documentação | 20% | README, gráfico, lições |
-| Organização | 15% | Estrutura de pastas, gitignore |
-
-Bonus (até +10%):
-- Checksum funcional (+3%)
-- Detecção de apogeu (+3%)
-- Testes automatizados (+2%)
-- Interface gráfica (+2%)
-
-## Perguntas para reflexão
-
-- O que você faria diferente se fosse para um voo real?
-- Como tornar o sistema mais robusto a falhas?
-- O que falta para esse pipeline virar o firmware de verdade do Flight Computer?
-- Como o FreeRTOS ajudaria在这个projeto?
-- Como integrar com LoRa em vez de serial?
+| Aspecto | Flight Computer | Helike |
+|---------|----------------|--------|
+| MCU | ESP32-S3 (dual-core) | ESP32-C3 (single-core) |
+| SO | FreeRTOS | Loop simples |
+| FSM | 4 estados + 7 sub-events | Não tem |
+| Barômetro | BMP585 | BME280 |
+| IMU | LSM6DS3 | ICM-20602 |
+| GPS | NEO-8M | NEO-8M |
+| LoRa | 915 MHz, +17 dBm | 915 MHz, +20 dBm |
+| Storage | SD → LittleFS | SD → LittleFS |
+| Telemetria | 22 campos CSV | 18 campos CSV + '#' |
+| Testes | Hardware validation | 25 testes nativos |
+| Build | Arduino IDE | PlatformIO |
 
 ## Dicas
 
-- Comece simples (só altitude) e vá adicionando campos
-- Valide cada etapa antes de avançar
-- Documente problemas encontrados e como resolveu
-- Use os exemplos das trilhas como base
+- Foque na arquitetura e no fluxo de dados, não em cada linha de código
+- Os `docs/` de cada repositório têm `software.md` e `hardware.md` com diagramas prontos
+- Use Mermaid para diagramas: é suportado nativamente pelo GitHub em markdown
+- Links úteis:
+  - Flight Computer: `firmware/config.h`, `firmware/REFAITORING_PLAN.md`
+  - Helike: `lib/calc/`, `test/`, `platformio.ini`
+  - Trilhas: [Arquitetura de Firmware](../trilhas/firmware-architecture.md), [Sensores](../trilhas/sensors.md)
+
+## Critérios de aceite
+
+- [ ] Resumo do Flight Computer com diagrama e tabela
+- [ ] Resumo do Helike com diagrama e fluxo
+- [ ] Mapa conceitual conectando semanas aos projetos
+- [ ] Tabela comparativa entre os dois projetos
+- [ ] Commit com tipo semântico (`docs:`)
+
+## Perguntas para reflexão
+
+- Quais componentes são comuns entre o Flight Computer e o Helike?
+- O que muda na estratégia de logging entre um foguete (FC) e um satélite (Helike)?
+- Por que o Helike usa PlatformIO e o FC usa Arduino IDE?
+- Como o FreeRTOS ajuda no Flight Computer? Seria necessário no Helike?
+- Por que o Helike tem um terminador '#' no pacote e o FC não?
 
 ## Referências
+- [Repositório Flight Computer](https://github.com/Serra-Rocketry/flight-computer)
 
-- [Trilha Python](../trilhas/python.md)
-- [Trilha Arduino IDE](../trilhas/arduino-ide.md)
-- [Trilha PlatformIO](../trilhas/platformio.md)
-- [Trilha Arquitetura de Firmware](../trilhas/firmware-architecture.md)
+- [Repositório Helike](https://github.com/Serra-Rocketry/satellite)
 - [Slide deck](../slides/semana-08.html)
 - [Quiz](../quiz/semana-08.html)
+- [Trilha Arquitetura de Firmware](../trilhas/firmware-architecture.md)
+- [Trilha Sensores](../trilhas/sensors.md)

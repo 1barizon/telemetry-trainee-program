@@ -1,4 +1,4 @@
-# Roadmap Treinamento Telemetria (9 semanas)
+# Roadmap Treinamento Telemetria (10 semanas)
 
 ## Formato semanal (fixo)
 
@@ -78,7 +78,28 @@ Conexão com projetos reais: GPIO, I2C, serial usados em ambos os projetos.
 
 ---
 
-## Semana 4 - PlatformIO (organização)
+## Semana 4 - Chips personalizados no Wokwi (simulação)
+
+Objetivo: Simular o computador de bordo com os custom chips do repositório e fechar o ciclo de telemetria.
+
+Pré-requisitos: Semanas 0 a 3 (reaproveita as Semanas 1, 2 e 3)
+
+Trilhas relacionadas: [Arduino IDE](trilhas/arduino-ide.md), [Sensores e Protocolos](trilhas/sensors.md)
+
+Entregas (issues):
+- Projeto no Wokwi com ESP32-S3 + BMP585 + LSM6DS3 + NEO-8M montado do zero
+- Firmware lendo os três chips e enviando pacotes a 10 Hz
+- `log_wokwi.txt` com 5+ minutos de simulação
+- Parser adaptado gerando `dados_tratados.csv`
+- Gráficos no Colab a partir do CSV tratado
+
+Roteiro detalhado: [Semana 4](semanas/semana-04.md)
+
+Conexão com projetos reais: Mesmos sensores (BMP585, LSM6DS3, NEO-8M) e pinos do Flight Computer, validados sem hardware físico.
+
+---
+
+## Semana 5 - PlatformIO (organização)
 
 Objetivo: Organização profissional de projetos.
 
@@ -95,7 +116,7 @@ Conexão com projetos reais: Helike usa PlatformIO com testes nativos.
 
 ---
 
-## Semana 5 - Integração Arduino ↔ Python
+## Semana 6 - Integração Arduino ↔ Python
 
 Objetivo: Comunicação entre hardware e software.
 
@@ -112,7 +133,7 @@ Conexão com projetos reais: Telemetria LoRa → estação terrestre Python.
 
 ---
 
-## Semana 6 - KiCad básico
+## Semana 7 - KiCad básico
 
 Objetivo: Design de circuitos eletrônicos.
 
@@ -129,7 +150,7 @@ Conexão com projetos reais: PCB do CDB (Helike) e placa do Flight Computer.
 
 ---
 
-## Semana 7 - Contexto dos projetos reais (FC + Helike)
+## Semana 8 - Contexto dos projetos reais (FC + Helike)
 
 Objetivo: Entender a arquitetura dos projetos reais.
 
@@ -143,11 +164,11 @@ Entregas (issues):
 - Mapa conceitual (FSM + Telemetria + Power)
 - Tabela comparativa entre os projetos
 
-Roteiro detalhado: [Semana 7](semanas/semana-07.md)
+Roteiro detalhado: [Semana 8](semanas/semana-08.md)
 
 ---
 
-## Semana 8 - Mini-projeto final (capstone)
+## Semana 9 - Mini-projeto final (capstone)
 
 Objetivo: Pipeline end-to-end de telemetria.
 
@@ -158,23 +179,6 @@ Entregas (issues):
 - Firmware com sensor + checksum + detecção de apogeu
 - Script Python com receptor + análise + gráficos
 - README completo com resultados
-
-Roteiro detalhado: [Semana 8](semanas/semana-08.md)
-
----
-
-## Semana 9 - Chips personalizados no Wokwi (simulação)
-
-Objetivo: Simular o computador de bordo com os custom chips do repositório e fechar o ciclo de telemetria.
-
-Pré-requisitos: Semanas 0 a 8 (reaproveita as Semanas 1, 2 e 3)
-
-Entregas (issues):
-- Projeto no Wokwi com ESP32-S3 + BMP585 + LSM6DS3 + NEO-8M montado do zero
-- Firmware lendo os três chips e enviando pacotes a 10 Hz
-- `log_wokwi.txt` com 5+ minutos de simulação
-- Parser adaptado gerando `dados_tratados.csv`
-- Gráficos no Colab a partir do CSV tratado
 
 Roteiro detalhado: [Semana 9](semanas/semana-09.md)
 

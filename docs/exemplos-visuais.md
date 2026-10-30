@@ -247,10 +247,10 @@ Semana 0: [✅] Setup
 Semana 1: [✅] Python básico
 Semana 2: [✅] Python aplicado
 Semana 3: [✅] Arduino
-Semana 4: [✅] PlatformIO
-Semana 5: [⬜] Integração
-Semana 6: [⬜] KiCad
-Semana 7: [⬜] Projetos reais
-Semana 8: [⬜] Capstone
-Semana 9: [⬜] Chips no Wokwi
+Semana 4: [✅] Chips no Wokwi
+Semana 5: [⬜] PlatformIO
+Semana 6: [⬜] Integração
+Semana 7: [⬜] KiCad
+Semana 8: [⬜] Projetos reais
+Semana 9: [⬜] Capstone
 ```

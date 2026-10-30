@@ -518,7 +518,7 @@ private:
 
 ## Entregas relacionadas
 
-- [Semana 4](../semanas/semana-04.md): Migração Arduino IDE → PlatformIO
+- [Semana 5](../semanas/semana-05.md): Migração Arduino IDE → PlatformIO
 
 ## Critérios de aceite
 

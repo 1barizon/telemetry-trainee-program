@@ -446,9 +446,9 @@ void readSensors(ISensor* sensors[], int count) {
 
 ## Entregas relacionadas
 
-- Semana 7: Arquitetura dos projetos reais
-- Semana 8: Pipeline end-to-end (FreeRTOS não é obrigatório no capstone)
-- Semana 9: Sensores do Flight Computer simulados como custom chips no Wokwi
+- Semana 4: Sensores do Flight Computer simulados como custom chips no Wokwi
+- Semana 8: Arquitetura dos projetos reais
+- Semana 9: Pipeline end-to-end (FreeRTOS não é obrigatório no capstone)
 
 ## Referências
 

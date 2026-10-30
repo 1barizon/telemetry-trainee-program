@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Semana 08 — Capstone</title>
+  <title>Semana 08 — Flight Computer & Helike</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.min.css">
   <style>
@@ -28,269 +28,290 @@
 
       <section>
         <h1>Semana 08</h1>
-        <h2>Capstone</h2>
-        <p class="subtitle">Projeto final — Integração completa de telemetria</p>
+        <h2>Flight Computer & Helike</h2>
+        <p class="subtitle">Arquitetura dos sistemas reais de telemetria</p>
       </section>
 
       <section>
         <h2>Objetivos de Aprendizado</h2>
         <ul>
-          <li>Revisar todo o conhecimento adquirido</li>
-          <li>Construir pipeline end-to-end de telemetria</li>
-          <li>Entender expectativas para projetos reais</li>
-          <li>Planejar próximos passos na equipe</li>
+          <li>Entender arquitetura do Flight Computer (FC)</li>
+          <li>Conhecer o projeto Helike PocketQube</li>
+          <li>Compreender como a telemetria conecta os sistemas</li>
+          <li>Identificar oportunidades de contribuição</li>
         </ul>
       </section>
 
       <section>
-        <h2>Jornada: Revisão Rápida</h2>
+        <h2>O que é o Flight Computer?</h2>
+        <p>O Flight Computer (FC) é o cérebro do foguete/satélite:</p>
         <ul>
-          <li><strong>S00</strong> — Git, GitHub, PRs, ambiente configurado</li>
-          <li><strong>S01</strong> — Python: CSV, estatísticas, matplotlib</li>
-          <li><strong>S02</strong> — Python: parsing, validação, serial</li>
-          <li><strong>S03</strong> — Arduino: GPIO, I2C, millis(), serial</li>
-          <li><strong>S04</strong> — PlatformIO: estrutura profissional, testes Unity</li>
-          <li><strong>S05</strong> — Integração Arduino ↔ Python em tempo real</li>
-          <li><strong>S06</strong> — KiCad: esquemático, PCB, exportação</li>
-          <li><strong>S07</strong> — Flight Computer, Helike, FSM, LoRa</li>
-          <li><strong>S08</strong> — Capstone: pipeline end-to-end</li>
-          <li><strong>S09</strong> — Sensores do Flight Computer no Wokwi</li>
+          <li>Processador: ESP32-S3 (Flight Computer) / ESP32-C3 (Helike)</li>
+          <li>Sensores: barômetro (BMP585/BME280), IMU (LSM6DS3/ICM-20602), GPS (NEO-8M)</li>
+          <li>Atuadores: servo para paraquedas, buzzers, LEDs</li>
+          <li>Comunicação: LoRa (rádio), XBee, WiFi (solo)</li>
+          <li>Armazenamento: cartão SD para log de voo</li>
+          <li>Bateria: LiPo 2S-4S com BMS</li>
         </ul>
-        <p class="objective">Você chegou ao fim do núcleo do treinamento — a Semana 9 fecha o ciclo com a simulação do computador de bordo.</p>
       </section>
 
       <section>
-        <h2>Pipeline End-to-End</h2>
-        <pre><code class="language-text">┌─────────────────────────────────────────────────────────────────┐
-│                    PIPELINE DE TELEMETRIA                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  HARDWARE                  FIRMWARE              SOFTWARE        │
-│                                                                  │
-│  ┌────────┐    ┌──────────────────┐    ┌────────────────────┐   │
-│  │BMP280  │    │  Arduino/Teensy  │    │  Python (PC/RPi)   │   │
-│  │IMU     │───►│                  │───►│                    │   │
-│  │GPS     │    │  millis() 20Hz   │    │  pyserial          │   │
-│  │Bateria │    │  I2C, SPI, UART  │    │  parsing/validação │   │
-│  └────────┘    │  checksum XOR    │    │  log CSV           │   │
-│                │  FSM states      │    │  matplotlib plots  │   │
-│                └──────────────────┘    └────────────────────┘   │
-│                         │                        │               │
-│                         │  Serial / LoRa         │               │
-│                         ▼                        ▼               │
-│                ┌──────────────────┐    ┌────────────────────┐   │
-│                │  Helike / FC     │    │  Dashboard /       │   │
-│                │  SRAB / LoRa     │    │  Análise pós-voo   │   │
-│                └──────────────────┘    └────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘</code></pre>
+        <h2>Arquitetura do FC</h2>
+        <pre><code class="language-text">┌─────────────────────────────────────────────────┐
+│              FLIGHT COMPUTER (FC)                 │
+│            ESP32-S3 · dual-core 240MHz            │
+│                                                   │
+│  ┌──────────┐  I2C  ┌──────────┐  I2C  ┌───────┐ │
+│  │  BMP585  │◄──────┤  LSM6DS3 │◄──────┤  GPS  │ │
+│  │ (baro)   │       │ (IMU)    │       │ NEO-8M│ │
+│  └──────────┘       └──────────┘       └───────┘ │
+│       │                  │                 │      │
+│       └──────────────────┴─────────────────┘      │
+│                          │ I2C/SPI                │
+│                     ┌────┴────┐                   │
+│                     │  MCU    │─── SPI ──► LoRa   │
+│                     │ESP32-S3 │─── SPI ──► SD     │
+│                     └────┬────┘                   │
+│                     ┌────┴────┐                   │
+│                     │ BATERIA │                   │
+│                     │ LiPo 2S │                   │
+│                     └─────────┘                   │
+└─────────────────────────────────────────────────┘</code></pre>
       </section>
 
       <section>
-        <h2>Projeto Capstone — Especificação</h2>
-        <p>Construir um sistema completo de telemetria que:</p>
+        <h2>FSM — Finite State Machine</h2>
+        <p>O FC opera em uma máquina de estados:</p>
+        <pre><code class="language-text">        ┌──────────┐
+        │  IDLE    │ (solo, aguardando ARM + lancamento)
+        └────┬─────┘
+             │ liftoff confirmado (acc > 15 m/s² por 100ms)
+        ┌────▼─────┐
+        │  ASCENT  │ (subindo, motor + balistico)
+        └────┬─────┘
+             │ apogeu (|vz| < 1.0 m/s) + paraquedas
+        ┌────▼─────┐
+        │ DESCENT  │ (descendo com paraquedas)
+        └────┬─────┘
+             │ pouso (|vz| < 0.5 m/s & alt < 2m)
+        ┌────▼─────┐
+        │  LANDED  │ (log final, beacon de recuperacao)
+        └──────────┘
+
+  FC: 4 estados + 7 sub-event flags
+  Helike: sem FSM (liga ja descendo)</code></pre>
+      </section>
+
+      <section>
+        <h2>Telemetria no FC</h2>
+        <p>O FC transmite pacotes de telemetria a cada ~200ms (5 Hz):</p>
+        <pre><code class="language-cpp">// Formato real: 22 campos CSV (FC) / 18 campos CSV (Helike)
+// Exemplo FC: #11,12345,1,250.3,101325,22.5,9.81,0.1,-0.3,...
+// Exemplo Helike: #213,12345,1,250.3,22.5,65,101325,...#
+
+// Pacote FC (simplificado):
+// team_id, millis, state, altitude, pressure, temperature,
+// accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,
+// gps_lat, gps_lon, gps_alt, gps_sat, ...
+
+// Pacote Helike (18 campos):
+// team_id, millis, count, altp, temp, umidade, pressao,
+// gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z,
+// alt_baro, lat, lon, sat, rssi#</code></pre>
+      </section>
+
+      <section>
+        <h2>Helike PocketQube</h2>
+        <p>Helike é um satélite PocketQube (5×5×5 cm) da Serra Rocketry:</p>
         <ul>
-          <li><strong>Firmware (PlatformIO):</strong> lê BMP280 a 20 Hz, envia pacotes com checksum pela serial</li>
-          <li><strong>FMS (Flight Mode Simulator):</strong> implementa FSM simples (IDLE → BOOST → COAST → DROGUE → LANDED)</li>
-          <li><strong>Ground Station (Python):</strong> lê serial, faz parsing, valida, log CSV</li>
-          <li><strong>Dashboard:</strong> gráficos em tempo real com matplotlib</li>
-          <li><strong>Simulação:</strong> gerar dados sintéticos para testar sem hardware</li>
-          <li><strong>Relatório:</strong> análise pós-voo automática</li>
+          <li>Formato: PocketQube 1P (5cm³) — ultra-compacto</li>
+          <li>Missão: SRAB (Sistema de Recuperação e Aterrissagem do Bob)</li>
+          <li>Competição: LASC 2026 (Latin American Space Challenge)</li>
+          <li>MCU: ESP32-C3 SuperMini (single-core RISC-V, 160MHz)</li>
+          <li>Comunicação: LoRa 915 MHz (RFM95W)</li>
+          <li>Plataforma: PlatformIO com testes nativos (Unity)</li>
         </ul>
       </section>
 
       <section>
-        <h2>FMS — Exemplo de Implementação</h2>
-        <pre><code class="language-cpp">enum State {
-  IDLE, BOOST, COAST, DROGUE, MAIN, LANDED
-};
+        <h2>CDB — Command & Data Base</h2>
+        <p>O CDB define todos os parâmetros, comandos e formatos:</p>
+        <pre><code class="language-text">CDB define:
+- IDs de cada pacote telemetrico
+- Formatos de comando (TC)
+- Formatos de telemetria (TM)
+- Limites operacionais
+- Tabela de calibracao dos sensores
 
-State estado = IDLE;
-unsigned long tempo_estado = 0;
+Exemplo de entrada CDB:
+TM_ID=0x01  PACOTE_ESTADO
+  timestamp : uint32_t  (ms)
+  state     : uint8_t   (FSM state)
+  altitude  : float     (m)
+  temp_bat  : float     (Celsius)
+  voltage   : float     (V)
 
-void loop() {
-  unsigned long agora = millis();
+TC_ID=0xA0  COMANDO_RESET
+  magic     : uint16_t  (0x5A5A)
+  delay_ms  : uint32_t  (ms ate reset)</code></pre>
+      </section>
 
-  switch (estado) {
-    case IDLE:
-      if (altitude > 10.0) {
-        transitarPara(BOOST, agora);
-      }
-      break;
+      <section>
+        <h2>LoRa — Rádio Comunicação</h2>
+        <p>LoRa (Long Range) é o link de rádio do Helike:</p>
+        <ul>
+          <li>Frequência: 915 MHz (ISM band — Brasil/Americas)</li>
+          <li>Alcance: até 10 km (solo) / 15+ km (foguete)</li>
+          <li>Configuração: SF7, BW 125 kHz, CR 4/5, CRC on</li>
+          <li>Potência: +17 dBm (FC) / +20 dBm (Helike)</li>
+          <li>Sincronização: Sync Word 0xF3 (compatível entre projetos)</li>
+        </ul>
+        <pre><code class="language-cpp">// Configuracao LoRa real (915 MHz, SF7)
+#include &lt;LoRa.h&gt;
 
-    case BOOST:
-      if (agora - tempo_estado > 2000) {
-        transitarPara(COAST, agora);
-      }
-      break;
-
-    case COAST:
-      if (detectarApogeu()) {
-        transitarPara(DROGUE, agora);
-      }
-      break;
-
-    case DROGUE:
-      if (altitude < 300.0) {
-        transitarPara(MAIN, agora);
-      }
-      break;
-
-    case MAIN:
-      if (altitude < 10.0 && abs(velocity) < 0.5) {
-        transitarPara(LANDED, agora);
-      }
-      break;
-
-    case LANDED:
-      // beacon final, desliga transmissoes
-      break;
-  }
-}
-
-void transitarPara(State novo, unsigned long agora) {
-  estado = novo;
-  tempo_estado = agora;
-  logEvento(estado);
+void setup() {
+  LoRa.setPins(SS, RST, DIO0);
+  LoRa.begin(915E6);              // 915 MHz (Brasil)
+  LoRa.setSpreadingFactor(7);     // SF7 (baixa latencia)
+  LoRa.setCodingRate4(5);         // CR 4/5
+  LoRa.setTxPower(17);            // +17 dBm (FC)
+  LoRa.enableCrc();               // CRC habilitado
 }</code></pre>
       </section>
 
       <section>
-        <h2>Ground Station — Estrutura</h2>
-        <pre><code class="language-python"># Estrutura sugerida para o projeto capstone
-projeto-capstone/
-├── firmware/
-│   ├── platformio.ini
-│   ├── src/
-│   │   └── main.cpp
-│   └── lib/
-│       ├── TelemetryProtocol/
-│       ├── BMP280Wrapper/
-│       └── FSM/
-├── ground_station/
-│   ├── main.py            # entry point
-│   ├── serial_reader.py   # conexao serial
-│   ├── parser.py          # parsing + checksum
-│   ├── validator.py       # validacao de dados
-│   ├── logger.py          # CSV logging
-│   ├── dashboard.py       # graficos tempo real
-│   └── post_flight.py     # analise pos-voo
-├── simulation/
-│   └── generate_data.py   # dados sinteticos
-├── tests/
-│   ├── test_parser.py
-│   └── test_validator.py
-└── relatorio_voo.md</code></pre>
-      </section>
-
-      <section>
-        <h2>Post-Flight Analysis</h2>
-        <pre><code class="language-python">def analisar_pos_voo(caminho_csv):
-    df = ler_csv(caminho_csv)
-
-    print("=== ANALISE POS-VOO ===")
-    print(f"Duracao: {df['timestamp'].iloc[-1] - df['timestamp'].iloc[0]:.1f}s")
-
-    alt_max = df['altitude'].max()
-    idx_max = df['altitude'].idxmax()
-    print(f"Altitude maxima: {alt_max:.1f}m (t={df['timestamp'][idx_max]:.1f}s)")
-
-    vel_max = calcular_velocidade_maxima(df)
-    print(f"Velocidade maxima: {vel_max:.1f} m/s ({vel_max*3.6:.1f} km/h)")
-
-    taxa_subida_max = calcular_taxa_subida(df)
-    print(f"Taxa de subida maxima: {taxa_subida_max:.1f} m/s")
-
-    # Gerar graficos automaticos
-    gerar_relatorio_grafico(df, "relatorio_voo.png")
-
-    print(f"Relatorio salvo em relatorio_voo.png")</code></pre>
-      </section>
-
-      <section>
-        <h2>Critérios de Avaliação do Capstone</h2>
+        <h2>SRAB — Sistema de Recuperação</h2>
+        <p>SRAB (Sistema de Recuperação e Aterrissagem do Bob):</p>
         <ul>
-          <li><strong>Funcionalidade:</strong> o sistema funciona end-to-end?</li>
-          <li><strong>Código:</strong> está organizado, comentado (quando necessário), testado?</li>
-          <li><strong>Documentação:</strong> README explica como rodar?</li>
-          <li><strong>Versionamento:</strong> commits atômicos, mensagens claras?</li>
-          <li><strong>Colaboração:</strong> soube pedir/receber feedback?</li>
-          <li><strong>Entrega:</strong> PR completo até o deadline?</li>
+          <li>Atuador: servo motor para liberação do paraquedas</li>
+          <li>Acionado pela FSM quando apogeu é detectado</li>
+          <li>Critérios: altitude decrescente por N amostras consecutivas</li>
+          <li>Redundância: timer de segurança (watchdog)</li>
+        </ul>
+        <pre><code class="language-cpp">void check_apogee(float altitude) {
+  static float alt_max = 0;
+  static int amostras_descendo = 0;
+
+  if (altitude > alt_max) {
+    alt_max = altitude;
+    amostras_descendo = 0;
+  } else {
+    amostras_descendo++;
+  }
+
+  // Apogeu confirmado apos 10 amostras descendo
+  if (amostras_descendo >= 10 && estado == COAST) {
+    estado = DROGUE;
+    servo.write(180);  // libera paraquedas
+    log_event("APOGEE_DETECTED");
+  }
+}</code></pre>
+      </section>
+
+      <section>
+        <h2>Como a Telemetria se Conecta</h2>
+        <pre><code class="language-text">      SPACE SEGMENT                    GROUND SEGMENT
+┌──────────────────────┐        ┌──────────────────────────┐
+│  Helike PocketQube   │        │   Estacao de Solo        │
+│                      │ LORA   │                          │
+│  ┌────┐    ┌──────┐  │◄──────►│  ┌──────┐  ┌─────────┐  │
+│  │ FC │───►│ LoRa │  │        │  │ LoRa │─►│ Python  │  │
+│  │    │    │ RFM95W│  │        │  │ RFM95W│  │ Parsing │  │
+│  │ FSM│    └──────┘  │        │  └──────┘  │ Valid.  │  │
+│  │ TM │              │        │            │ Log CSV │  │
+│  └────┘              │        │            │ Graf.   │  │
+│                      │        │            └─────────┘  │
+└──────────────────────┘        └──────────────────────────┘
+          ▲                               ▲
+          │     Semanas 01-02             │
+          │     Semanas 03-06             │
+          └───────────────────────────────┘</code></pre>
+        <p>Tudo que você aprendeu se conecta aqui!</p>
+      </section>
+
+      <section>
+        <h2>Pipeline Completo de Telemetria</h2>
+        <pre><code class="language-text">SENSORES
+  │
+  ▼
+FIRMWARE (FC — Arduino IDE / Helike — PlatformIO)
+  │ coleta, formata, checksum
+  ▼
+LINK (LoRa / Serial USB)
+  │ transmissão
+  ▼
+GROUND STATION (Python)
+  │ parsing, validação, log
+  ▼
+ANÁLISE (Python + matplotlib)
+  │ gráficos, estatísticas
+  ▼
+VISUALIZAÇÃO (Dashboards, relatórios)
+  │
+  ▼
+TOMADA DE DECISÃO (próximo lançamento)</code></pre>
+      </section>
+
+      <section>
+        <h2>Oportunidades de Contribuição</h2>
+        <p>Áreas onde você pode contribuir:</p>
+        <ul>
+          <li><strong>Firmware:</strong> drivers de sensores, FSM, controle</li>
+          <li><strong>Python:</strong> pipeline de telemetria, dashboards em tempo real</li>
+          <li><strong>Hardware:</strong> design de PCB, montagem, testes</li>
+          <li><strong>LoRa:</strong> protocolo de comunicação, otimização de link</li>
+          <li><strong>CDB:</strong> definição de parâmetros e comandos</li>
+          <li><strong>Testes:</strong> validação de hardware, simulações</li>
+          <li><strong>Documentação:</strong> manuais, wiki, relatórios de voo</li>
+          <li><strong>SRAB:</strong> algoritmo de detecção de apogeu</li>
         </ul>
       </section>
 
       <section>
-        <h2>Expectativas para Projetos Reais</h2>
-        <p>Depois do treinamento, você estará apto a:</p>
-        <ul>
-          <li>Participar de campanhas de lançamento</li>
-          <li>Implementar novas funcionalidades no FC</li>
-          <li>Analisar dados de voo reais</li>
-          <li>Projetar PCBs para novos sensores</li>
-          <li>Escrever e revisar PRs da equipe</li>
-          <li>Contribuir com o Helike PocketQube</li>
-          <li>Tutoriar novos trainees no futuro</li>
-        </ul>
-        <p class="objective">O treinamento é o começo, não o fim.</p>
-      </section>
-
-      <section>
-        <h2>Próximos Passos</h2>
+        <h2>Como Começar a Contribuir</h2>
         <ol>
-          <li>Finalizar e entregar o Capstone</li>
-          <li>Participar da revisão de código dos colegas</li>
-          <li>Pegar uma issue real no repositório do FC</li>
-          <li>Configurar ambiente para testes de hardware</li>
-          <li>Participar dos testes de integração do Helike</li>
-          <li>Estudar tópicos avançados:</li>
-          <ul>
-            <li>RTOS (FreeRTOS) no firmware</li>
-            <li>Filtros (Kalman, complementar)</li>
-            <li>Controle (PID para recovery)</li>
-            <li>RF e antenas</li>
-          </ul>
+          <li>Escolha uma área de interesse</li>
+          <li>Leia o código existente no repositório</li>
+          <li>Pegue uma issue marcada como "good first issue"</li>
+          <li>Discuta no Discord antes de implementar</li>
+          <li>Abra um draft PR para feedback early</li>
+          <li>Itere com os revisores</li>
         </ol>
+        <p class="objective">Não precisa saber tudo — a gente aprende junto.</p>
       </section>
 
       <section>
-        <h2>Recursos para Continuar</h2>
+        <h2>Repositórios</h2>
         <ul>
-          <li><strong>Repositório:</strong> github.com/organizacao/telemetry-trainee-program</li>
-          <li><strong>Discord:</strong> canal #telemetria para dúvidas</li>
-          <li><strong>Wiki:</strong> documentação técnica do FC e Helike</li>
-          <li><strong>Datasheet:</strong> BMP280, ICM20948, RFM96</li>
-          <li><strong>Livros:</strong> "Small Satellite Missions", "RF Design for CubeSats"</li>
-          <li><strong>Cursos:</strong> Embedded Systems (edX), RF Fundamentals</li>
+          <li><strong>Flight Computer:</strong> github.com/ViniciusCMB/flight-computer</li>
+          <li><strong>Helike (Satellite):</strong> github.com/ViniciusCMB/satellite</li>
+          <li><strong>Documentação:</strong> docs/software.md e docs/hardware.md em cada repo</li>
         </ul>
       </section>
 
       <section>
-        <h2>Mensagem Final</h2>
-        <blockquote>
-          "A telemetria não é sobre coletar dados — é sobre entender o que o foguete está dizendo."
-        </blockquote>
-        <br>
-        <ul>
-          <li>Você aprendeu a escutar (serial)</li>
-          <li>Você aprendeu a interpretar (parsing)</li>
-          <li>Você aprendeu a registrar (CSV)</li>
-          <li>Você aprendeu a visualizar (matplotlib)</li>
-          <li>Você aprendeu a projetar (KiCad)</li>
-          <li>Você aprendeu a colaborar (Git)</li>
-        </ul>
-        <br>
-        <p class="subtitle center"><strong>Bem-vindo ao time de telemetria!</strong></p>
+        <h2>Exercícios</h2>
+        <ol>
+          <li>Mapear a FSM do Flight Computer (desenho ou texto)</li>
+          <li>Identificar 3 diferenças entre o FC e o Helike</li>
+          <li>Escolher uma área de contribuição e escrever plano</li>
+          <li>Simular uma transmissão LoRa (Python + rádio virtual)</li>
+          <li>Analisar um log de voo real (fornecido pelos mentores)</li>
+        </ol>
+        <p class="objective">Entregar via PR até domingo.</p>
       </section>
 
       <section>
         <h2>Resumo & Conclusão</h2>
         <ul>
-          <li>Revisão completa das semanas do núcleo</li>
-          <li>Pipeline end-to-end: sensor → firmware → solo → análise</li>
-          <li>Capstone: projeto que integra tudo que foi aprendido</li>
-          <li>Prontos para contribuir com projetos reais</li>
-          <li>Próximos passos: issues, testes, evolução contínua</li>
+          <li>Flight Computer: MCU + sensores + FSM + telemetria</li>
+          <li>Helike PocketQube: satélite 1P com CDB e LoRa</li>
+          <li>SRAB: sistema de recuperação por paraquedas</li>
+          <li>Telemetria conecta firmware → rádio → solo → análise</li>
+          <li>Múltiplas oportunidades de contribuição real</li>
         </ul>
-        <p class="subtitle center">Parabéns por completar o treinamento! 🚀</p>
+        <p>Você já tem as ferramentas para contribuir com projetos reais.</p>
+        <p class="subtitle">Próximo passo: Semana 09 — Capstone</p>
       </section>
 
     </div>

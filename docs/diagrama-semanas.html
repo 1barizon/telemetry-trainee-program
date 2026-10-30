@@ -26,7 +26,7 @@ td { padding: 8px 12px; border: 1px solid #30363d; color: #8b949e; }
 <div class="wrapper">
   <a class="back" href="index.html">← Voltar</a>
   <h1>Diagrama do Treinamento</h1>
-  <p class="subtitle">Fluxo das 9 semanas e conexão com os projetos reais.</p>
+  <p class="subtitle">Fluxo das 10 semanas e conexão com os projetos reais.</p>
 
   <div class="mermaid-wrap">
     <pre class="mermaid">
@@ -36,12 +36,12 @@ graph TD
         S1["Semana 1 - Python basico"]
         S2["Semana 2 - Python aplicado"]
         S3["Semana 3 - Arduino IDE"]
-        S4["Semana 4 - PlatformIO"]
-        S5["Semana 5 - Integracao Python Arduino"]
-        S6["Semana 6 - KiCad"]
-        S7["Semana 7 - Projetos Reais"]
-        S8["Semana 8 - Capstone"]
-        S9["Semana 9 - Chips no Wokwi"]
+        S4["Semana 4 - Chips no Wokwi"]
+        S5["Semana 5 - PlatformIO"]
+        S6["Semana 6 - Integracao Python Arduino"]
+        S7["Semana 7 - KiCad"]
+        S8["Semana 8 - Projetos Reais"]
+        S9["Semana 9 - Capstone"]
     end
 
     subgraph Projetos
@@ -50,11 +50,10 @@ graph TD
     end
 
     S0 --> S1
-    S1 --> S2 --> S5
-    S3 --> S4 --> S5
-    S5 --> S8
-    S6 --> S8
-    S7 --> S8
+    S1 --> S2 --> S6
+    S3 --> S4 --> S5 --> S6
+    S6 --> S9
+    S7 --> S9
     S8 --> S9
 
     S0 -.->|fluxo git| FC
@@ -64,10 +63,10 @@ graph TD
     S2 -.->|parser| HELIKE
     S3 -.->|GPIO, I2C| FC
     S3 -.->|I2C, sensores| HELIKE
-    S4 -.->|estrutura PIO| HELIKE
-    S5 -.->|pipeline telemetria| FC
-    S6 -.->|PCB| HELIKE
-    S9 -.->|sensores e firmware| FC
+    S4 -.->|sensores e firmware| FC
+    S5 -.->|estrutura PIO| HELIKE
+    S6 -.->|pipeline telemetria| FC
+    S7 -.->|PCB| HELIKE
 
     style Treinamento fill:#1c2333,stroke:#ff6b35,color:#e6edf3
     style Projetos fill:#1c2333,stroke:#2ea043,color:#e6edf3
@@ -83,12 +82,12 @@ graph TD
     <tr><td>1</td><td>Python: CSV, estatisticas</td><td>Analise pos-voo do FC</td></tr>
     <tr><td>2</td><td>Python: parser, validacao</td><td>Parsing de telemetria do Helike</td></tr>
     <tr><td>3</td><td>Arduino: GPIO, I2C, serial</td><td>Testes de hardware de ambos</td></tr>
-    <tr><td>4</td><td>PlatformIO: estrutura, testes</td><td>Organizacao do firmware Helike</td></tr>
-    <tr><td>5</td><td>Integracao Arduino - Python</td><td>Pipeline de telemetria do FC</td></tr>
-    <tr><td>6</td><td>KiCad: esquematico, ERC</td><td>CDB do Helike</td></tr>
-    <tr><td>7</td><td>Arquitetura de sistemas</td><td>Visao geral de ambos</td></tr>
-    <tr><td>8</td><td>Pipeline completo</td><td>Sintese de tudo</td></tr>
-    <tr><td>9</td><td>Custom chips, I2C, UART</td><td>Sensores do Flight Computer no Wokwi</td></tr>
+    <tr><td>4</td><td>Custom chips, I2C, UART</td><td>Sensores do Flight Computer no Wokwi</td></tr>
+    <tr><td>5</td><td>PlatformIO: estrutura, testes</td><td>Organizacao do firmware Helike</td></tr>
+    <tr><td>6</td><td>Integracao Arduino - Python</td><td>Pipeline de telemetria do FC</td></tr>
+    <tr><td>7</td><td>KiCad: esquematico, ERC</td><td>CDB do Helike</td></tr>
+    <tr><td>8</td><td>Arquitetura de sistemas</td><td>Visao geral de ambos</td></tr>
+    <tr><td>9</td><td>Pipeline completo</td><td>Sintese de tudo</td></tr>
   </table>
 </div>
 </body>

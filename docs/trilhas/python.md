@@ -351,7 +351,7 @@ def parse_helike_packet(line):
 
 - [Semana 1](../semanas/semana-01.md): Leitura de CSV + estatísticas
 - [Semana 2](../semanas/semana-02.md): Parser + validação
-- [Semana 5](../semanas/semana-05.md): Integração Arduino ↔ Python
+- [Semana 6](../semanas/semana-06.md): Integração Arduino ↔ Python
 
 ## Critérios de aceite
 

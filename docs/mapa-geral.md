@@ -4,7 +4,7 @@
 
 - [Guia do Aluno](guia-do-aluno.md)
 - [Visao Geral](visao-geral.md)
-- [Roadmap do Treinamento (9 semanas)](roadmap.md)
+- [Roadmap do Treinamento (10 semanas)](roadmap.md)
 - [Calendario](calendario.md)
 
 ## Conteudo principal

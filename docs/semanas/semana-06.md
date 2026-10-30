@@ -1,92 +1,88 @@
-# Semana 6 - KiCad básico
+# Semana 6 - Integração Arduino ↔ Python
 
 ## Objetivo
 
-Criar um esquemático de ESP32-C3 + BMP280 no KiCad e rodar ERC.
+Fazer o Arduino enviar dados pela serial e o Python receber, parsear e salvar em tempo real.
 
 ## Preparação
 
-- [ ] KiCad 8+ instalado
-- [ ] Ler a [Trilha KiCad](../trilhas/kicad.md) (seções 1 a 5)
+- [ ] Semanas 3, 4 e 5 concluídas (Arduino enviando pacotes e projeto no PlatformIO)
+- [ ] Semanas 1 e 2 concluídas (parser Python funcional)
+- [ ] ESP32-C3 conectado via USB
+- [ ] Rever [serial no Arduino](../trilhas/arduino-ide.md#3-serial--comunicao-com-o-pc)
+- [ ] Rever [parsing no Python](../trilhas/python.md#12-parsing-de-pacotes-serial)
 - [ ] Ver o [Slide deck](../slides/semana-06.html)
 - [ ] Fazer o [Quiz](../quiz/semana-06.html)
 
 ## Problema
 
-### Tarefa 1 - Criar projeto
+### Lado Arduino
 
-Crie um novo projeto KiCad: `semana-6-kicad`
+O ESP32-C3 deve enviar pacotes a 20 Hz no formato:
 
-### Tarefa 2 - Esquemático
+```
+#timestamp_ms;altitude_m;temperatura_C;pressao_hPa;ax;ay;az#
+```
 
-No Eeschema, monte o circuito:
+- Use o código da Semana 3 (ou o projeto da Semana 5 no PlatformIO)
+- Mantenha o LED piscando a 1 Hz
+- O ESP deve ficar ligado e enviando por tempo indeterminado
 
-Componentes:
-- ESP32-C3 (use um conector ou símbolo genérico de MCU)
-- BMP280 (`Sensor_Temperature:BMP280`)
-- 2 resistores de 10k (pull-up I2C)
-- 1 capacitor de 100nF (desacoplamento)
-- Conector de expansão (opcional)
+### Lado Python
 
-Conexões:
-- BMP280 VCC → 3.3V
-- BMP280 GND → GND
-- BMP280 SDA → I2C_SDA (label global)
-- BMP280 SCL → I2C_SCL (label global)
-- Pull-up de 10k de I2C_SDA para 3.3V
-- Pull-up de 10k de I2C_SCL para 3.3V
-- ESP GPIO4 → I2C_SDA
-- ESP GPIO5 → I2C_SCL
-- Capacitor 100nF entre 3.3V e GND (próximo ao ESP)
-- PWR_FLAG no 3.3V e no GND
+Crie um script que:
 
-### Tarefa 3 - ERC
+1. Conecta na porta serial onde o ESP32 está
+2. Lê linhas continuamente
+3. Parseia cada linha com o parser da Semana 2
+4. Valida com o validador da Semana 2
+5. Salva pacotes válidos em CSV
+6. Registra pacotes inválidos em `erros.log`
+7. Exibe estatísticas a cada 50 pacotes:
 
-Rode o ERC (Inspect → Electrical Rules Check).
+```
+[14:30:15] 150 pacotes | 142 OK | 5 parser err | 3 valid rej | 94.7% OK
+```
 
-Corrija todos os erros críticos. Os mais comuns:
-
-| Erro | Causa | Solução |
-|---|---|---|
-| "Power pin not connected" | Faltou PWR_FLAG | Adicione PWR_FLAG |
-| "Input pin not driven" | Pino de entrada solto | Conecte ao net correto |
-| "Pin connected to other pin" | Dois outputs ligados | Revise a conexão |
-
-### Tarefa 4 - Exportar PDF
-
-Exporte o esquemático como PDF (File → Plot → PDF).
+Requisitos de robustez:
+- Trate desconexão da serial (`serial.SerialException`)
+- Trate linha corrompida sem quebrar o loop
+- Use `serial.timeout` para não travar se o ESP parar de enviar
+- O script deve rodar 5+ minutos sem perder pacotes
 
 ## Dicas
 
-- `PWR_FLAG` é um componente especial: Place → Power Port → selecione PWR_FLAG
-- Use labels globais (Place → Global Label) para SDA e SCL
-- A tecla W é o Wire (fio) para conexões
-- A tecla C é para copiar componentes
+- Descubra a porta: `ls /dev/tty*` no Linux, ou `COM3` no Windows
+- `serial.Serial(porta, 115200, timeout=1)` - timeout de 1s evita travamento
+- `ser.readline()` retorna bytes - use `.decode("utf-8", errors="ignore")` e `.strip()`
+- Reaproveite as funções `parse_packet()` e `validate_packet()` da Semana 2
+- Para o CSV: abra uma vez no início e escreva cada pacote válido com `csv.writer`
 
 ## Extra (opcional)
 
-- Passe para o Pcbnew e posicione os componentes
-- Roteie trilhas (VCC e GND com 0.5mm, SDA/SCL com 0.25mm)
-- Adicione um plano de GND (Zones → Add Filled Zone)
-- Exporte Gerber
+- Gráfico em tempo real com matplotlib (`plt.ion()`)
+- Envie um comando pelo serial para o ESP (ex: "R" reseta, "P" pausa)
+- Calcule e exiba a taxa de amostragem real (pacotes/segundo)
 
 ## Critérios de aceite
 
-- [ ] Esquemático completo com todos os componentes
-- [ ] ERC sem erros críticos
-- [ ] PDF exportado
-- [ ] README descrevendo o circuito
+- [ ] Arduino envia a 20 Hz constante
+- [ ] Python lê, parseia e valida sem perder dados
+- [ ] CSV de saída com dados limpos
+- [ ] Log de erros separado
+- [ ] Roda 5+ min sem travamento
 - [ ] Commit com tipo semântico
+- [ ] README com instruções de execução
 
 ## Perguntas para reflexão
 
-- Por que o I2C precisa de resistores de pull-up?
-- O que o capacitor de desacoplamento faz?
-- Qual a diferença entre símbolo e footprint no KiCad?
+- O que acontece se o Python ler mais devagar que o Arduino envia?
+- Por que separar parser e validador em funções diferentes?
+- Como garantir que o CSV não corrompa se o script for interrompido no meio?
 
 ## Referências
 
-- [Trilha KiCad](../trilhas/kicad.md)
-- [Exemplo KiCad](../examples/kicad-exemplo.md)
+- [Trilha Python](../trilhas/python.md)
+- [Trilha Arduino IDE](../trilhas/arduino-ide.md)
 - [Slide deck](../slides/semana-06.html)
 - [Quiz](../quiz/semana-06.html)

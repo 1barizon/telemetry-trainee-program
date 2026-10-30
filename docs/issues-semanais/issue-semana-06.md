@@ -1,20 +1,21 @@
-# Semana 6 - KiCad basico
+# Semana 6 - Integracao Arduino ↔ Python
 
 ## Objetivo
 
-Criar esquematico simples e exportar PDF.
+Receber dados da serial e gerar log.
 
 ## Tarefas
 
-- [ ] Esquematico (sensor + MCU)
-- [ ] Export PDF + checklist ERC
+- [ ] Arduino envia pacotes periodicos
+- [ ] Python recebe, parseia e loga
 
 ## Criterios de aceite
 
-- [ ] ERC sem erros criticos
-- [ ] PDF gerado
+- [ ] Dados recebidos sem travar
+- [ ] Log estruturado
+- [ ] README atualizado
 
 ## Referencias
 
-- [Trilha KiCad](../trilhas/kicad.md)
-- [Exemplo KiCad](../examples/kicad-exemplo.md)
+- [Trilha Python](../trilhas/python.md)
+- [Trilha Arduino IDE](../trilhas/arduino-ide.md)

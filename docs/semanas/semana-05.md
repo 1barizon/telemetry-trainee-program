@@ -1,88 +1,103 @@
-# Semana 5 - Integração Arduino ↔ Python
+# Semana 5 - PlatformIO
 
 ## Objetivo
 
-Fazer o Arduino enviar dados pela serial e o Python receber, parsear e salvar em tempo real.
+Migrar o projeto da Semana 3 do Arduino IDE para PlatformIO com estrutura modular e testes.
 
 ## Preparação
 
-- [ ] Semanas 3 e 4 concluídas (Arduino enviando pacotes)
-- [ ] Semanas 1 e 2 concluídas (parser Python funcional)
-- [ ] ESP32-C3 conectado via USB
-- [ ] Rever [serial no Arduino](../trilhas/arduino-ide.md#3-serial--comunicao-com-o-pc)
-- [ ] Rever [parsing no Python](../trilhas/python.md#12-parsing-de-pacotes-serial)
+- [ ] Semana 3 concluída (código funcional no Arduino IDE)
+- [ ] Semana 4 concluída (firmware simulado no Wokwi)
+- [ ] VS Code + PlatformIO extension
+- [ ] Ler a [Trilha PlatformIO](../trilhas/platformio.md) (seções 1 a 5)
 - [ ] Ver o [Slide deck](../slides/semana-05.html)
 - [ ] Fazer o [Quiz](../quiz/semana-05.html)
 
 ## Problema
 
-### Lado Arduino
+### Tarefa 1 - Criar projeto
 
-O ESP32-C3 deve enviar pacotes a 20 Hz no formato:
-
-```
-#timestamp_ms;altitude_m;temperatura_C;pressao_hPa;ax;ay;az#
-```
-
-- Use o código das Semanas 3/4
-- Mantenha o LED piscando a 1 Hz
-- O ESP deve ficar ligado e enviando por tempo indeterminado
-
-### Lado Python
-
-Crie um script que:
-
-1. Conecta na porta serial onde o ESP32 está
-2. Lê linhas continuamente
-3. Parseia cada linha com o parser da Semana 2
-4. Valida com o validador da Semana 2
-5. Salva pacotes válidos em CSV
-6. Registra pacotes inválidos em `erros.log`
-7. Exibe estatísticas a cada 50 pacotes:
+Crie um projeto PlatformIO para ESP32-C3 com a estrutura:
 
 ```
-[14:30:15] 150 pacotes | 142 OK | 5 parser err | 3 valid rej | 94.7% OK
+projeto/
+├── platformio.ini
+├── src/
+│   └── main.cpp
+├── lib/
+│   └── calc/
+│       └── SensorData.h
+└── test/
+    └── test_sensor/
+        └── test_sensor.cpp
 ```
 
-Requisitos de robustez:
-- Trate desconexão da serial (`serial.SerialException`)
-- Trate linha corrompida sem quebrar o loop
-- Use `serial.timeout` para não travar se o ESP parar de enviar
-- O script deve rodar 5+ minutos sem perder pacotes
+### Tarefa 2 - Configurar platformio.ini
+
+Crie dois ambientes:
+- `esp32c3`: para o firmware (board `esp32-c3-devkitm-1`, framework arduino)
+- `native`: para testes no PC (framework unity)
+
+Adicione em `build_flags`: os pinos I2C como defines (`I2C_SDA=4`, `I2C_SCL=5`).
+Adicione em `lib_deps`: `Adafruit BMP280 Library`.
+
+### Tarefa 3 - Migrar o código
+
+Transfira o código da Semana 3 para `src/main.cpp`:
+- Adicione `#include <Arduino.h>` (no PlatformIO, .ino não existe mais)
+- Use os defines do `build_flags` em vez de números hardcoded
+- O código deve compilar com `pio run -e esp32c3`
+
+### Tarefa 4 - Módulo SensorData
+
+Crie `lib/calc/SensorData.h` com:
+- Uma `struct SensorData` com os campos do pacote
+- Um método `bool isValid()` que valida os ranges físicos (reaproveite a lógica da Semana 2)
+- Header-only (sem `.cpp`), sem dependência de bibliotecas Arduino
+
+### Tarefa 5 - Teste nativo
+
+Crie `test/test_sensor/test_sensor.cpp` que testa:
+- Um `SensorData` válido retorna `true`
+- Um com altitude > 10000 retorna `false`
+- Um com temperatura < -40 retorna `false`
+
+Use Unity framework (`TEST_ASSERT_TRUE`, `TEST_ASSERT_FALSE`).
+
+Rode: `pio test -e native`
 
 ## Dicas
 
-- Descubra a porta: `ls /dev/tty*` no Linux, ou `COM3` no Windows
-- `serial.Serial(porta, 115200, timeout=1)` - timeout de 1s evita travamento
-- `ser.readline()` retorna bytes - use `.decode("utf-8", errors="ignore")` e `.strip()`
-- Reaproveite as funções `parse_packet()` e `validate_packet()` da Semana 2
-- Para o CSV: abra uma vez no início e escreva cada pacote válido com `csv.writer`
+- Em `lib/calc/SensorData.h`, use apenas C++ padrão - nada de `Arduino.h`, `Wire.h`, etc.
+- `build_flags` no platformio.ini: por exemplo `-DI2C_SDA=4` - no código use `I2C_SDA` diretamente
+- `lib_deps` aceita formato `autor/nome @ versão`
+- Comando pra compilar sketch de teste: `pio run -e esp32c3 --project-option="src_dir=caminho"`
 
 ## Extra (opcional)
 
-- Gráfico em tempo real com matplotlib (`plt.ion()`)
-- Envie um comando pelo serial para o ESP (ex: "R" reseta, "P" pausa)
-- Calcule e exiba a taxa de amostragem real (pacotes/segundo)
+- Adicione um módulo `VerticalVelocity.h` que calcula Vz por diferença finita
+- Adicione um módulo `ApogeeDetection.h` que detecta apogeu por threshold de Vz
+- Escreva testes para ambos
 
 ## Critérios de aceite
 
-- [ ] Arduino envia a 20 Hz constante
-- [ ] Python lê, parseia e valida sem perder dados
-- [ ] CSV de saída com dados limpos
-- [ ] Log de erros separado
-- [ ] Roda 5+ min sem travamento
+- [ ] `pio run -e esp32c3` compila sem erros
+- [ ] Upload funciona e serial exibe dados
+- [ ] `pio test -e native` passa
+- [ ] Código organizado em `src/`, `lib/`, `test/`
+- [ ] `SensorData.h` sem dependência Arduino
+- [ ] README com instruções de build
 - [ ] Commit com tipo semântico
-- [ ] README com instruções de execução
 
 ## Perguntas para reflexão
 
-- O que acontece se o Python ler mais devagar que o Arduino envia?
-- Por que separar parser e validador em funções diferentes?
-- Como garantir que o CSV não corrompa se o script for interrompido no meio?
+- Por que separar a lógica em `lib/` e mantê-la sem dependência Arduino?
+- Qual a vantagem de ter um ambiente `native` além do `esp32c3`?
+- O que `build_flags` resolve que #define no código não resolve?
 
 ## Referências
 
-- [Trilha Python](../trilhas/python.md)
-- [Trilha Arduino IDE](../trilhas/arduino-ide.md)
+- [Trilha PlatformIO](../trilhas/platformio.md)
+- [Exemplo PlatformIO](../examples/platformio-exemplo.md)
 - [Slide deck](../slides/semana-05.html)
 - [Quiz](../quiz/semana-05.html)

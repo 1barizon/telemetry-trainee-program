@@ -26,7 +26,7 @@ entregas/
     │   └── evidencias/
     ├── semana-02/
     │   └── ...
-    ├── semana-08/
+    ├── semana-04/
     │   └── ...
     └── semana-09/
         └── ...
@@ -49,12 +49,12 @@ entregas/
 | 1 | `semana-01/` | `README.md` com o link do notebook Colab (pandas + gráficos) |
 | 2 | `semana-02/` | `README.md` + script do parser + `dados_tratados.csv` |
 | 3 | `semana-03/` | `README.md` + sketch Arduino |
-| 4 | `semana-04/` | `README.md` + projeto PlatformIO + testes |
-| 5 | `semana-05/` | `README.md` + código de integração Arduino ↔ Python |
-| 6 | `semana-06/` | `README.md` + arquivos KiCad + PDF do esquemático |
-| 7 | `semana-07/` | `README.md` + resumos/mapa conceitual |
-| 8 | `semana-08/` | `README.md` + projeto final (capstone) |
-| 9 | `semana-09/` | `README.md` + `sketch.ino` + `log_wokwi.txt` + `parser.py` + `dados_tratados.csv` |
+| 4 | `semana-04/` | `README.md` + `sketch.ino` + `log_wokwi.txt` + `parser.py` + `dados_tratados.csv` |
+| 5 | `semana-05/` | `README.md` + projeto PlatformIO + testes |
+| 6 | `semana-06/` | `README.md` + código de integração Arduino ↔ Python |
+| 7 | `semana-07/` | `README.md` + arquivos KiCad + PDF do esquemático |
+| 8 | `semana-08/` | `README.md` + resumos/mapa conceitual |
+| 9 | `semana-09/` | `README.md` + projeto final (capstone) |
 
 > Os detalhes exatos de cada entrega estão na semana correspondente em [`docs/semanas/`](semanas/) e na issue semanal.
 

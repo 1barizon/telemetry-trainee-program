@@ -31,9 +31,9 @@ Conteúdo didático organizado por tecnologia. Cada trilha ensina conceitos cone
 | Trilha | Semanas |
 |---|---|
 | GitHub | Semana 0 |
-| Python | Semanas 1, 2, 5 |
-| Arduino IDE | Semanas 3, 5 |
-| PlatformIO | Semana 4 |
-| KiCad | Semana 6 |
-| Arquitetura de Firmware | Semana 7 |
-| Sensores e Protocolos | Semanas 3, 5, 7 |
+| Python | Semanas 1, 2, 6 |
+| Arduino IDE | Semanas 3, 4, 6 |
+| PlatformIO | Semana 5 |
+| KiCad | Semana 7 |
+| Arquitetura de Firmware | Semana 8 |
+| Sensores e Protocolos | Semanas 3, 4, 6, 8 |

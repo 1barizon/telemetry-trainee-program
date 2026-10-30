@@ -40,7 +40,7 @@ h1 { font-size: 28px; margin-bottom: 8px; }
 </head>
 <body>
 <div class="quiz-container">
-  <h1>Quiz — Semana 6: KiCad</h1>
+  <h1>Quiz — Semana 6: Integração Arduino ↔ Python</h1>
   <p class="subtitle">Selecione as respostas. O feedback é imediato.</p>
 
   <div class="score-bar" id="scoreBar">
@@ -56,14 +56,14 @@ h1 { font-size: 28px; margin-bottom: 8px; }
 
 <script>
 const questions = [
-  { q: 'O que as regras ERC (Electrical Rules Check) verificam?', type: 'mc', options: ['a) Se a placa cabe no gabinete', 'b) Se as conexões elétricas no esquemático estão corretas (ex.: saídas conectadas a saídas)', 'c) Se os footprints estão centralizados', 'd) Se o custo dos componentes está dentro do orçamento'], correct: 1, explanation: '' },
-  { q: 'O schematic (esquemático) define as conexões lógicas entre componentes; o PCB define o layout físico.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
-  { q: 'Explique a diferença entre footprint e symbol no KiCad.', type: 'short', options: [], correct: 'Symbol é a representação gráfica do componente no esquemático (lógica). Footprint é a representação física na PCB (padrão de solda, dimensões, furos).' },
-  { q: 'Qual formato de arquivo é usado para fabricar as camadas de uma PCB?', type: 'mc', options: ['a) PDF', 'b) PNG', 'c) Gerber (RS-274X)', 'd) SVG'], correct: 2, explanation: '' },
-  { q: 'Um copper pour (preenchimento de cobre) conectado ao GND ajuda a reduzir ruído e simplificar o roteamento.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
-  { q: 'Qual é a função de um capacitor de desacoplamento (decoupling capacitor)?', type: 'mc', options: ['a) Amplificar o sinal', 'b) Filtrar ruídos de alta frequência na alimentação de um CI', 'c) Armazenar energia por longos períodos', 'd) Substituir a bateria principal'], correct: 1, explanation: '' },
-  { q: 'Por que capacitores de desacoplamento devem ser colocados o mais próximo possível dos pinos de alimentação do CI?', type: 'short', options: [], correct: 'Quanto mais próximo do pino, menor a indutância do traço, melhorando a eficácia do filtro contra ruídos de alta frequência.' },
-  { q: 'O que é uma "net class" no KiCad?', type: 'mc', options: ['a) Um agrupamento de componentes', 'b) Uma regra de espaçamento e largura de trilha para um grupo de nets', 'c) Um tipo de footprint', 'd) Uma biblioteca de simbolos'], correct: 1, explanation: '' }
+  { q: 'Qual é a diferença entre <code>Serial.parseInt()</code> e <code>Serial.readString()</code>?', type: 'mc', options: ['a) <code>parseInt()</code> lê um valor inteiro; <code>readString()</code> lê uma string completa até o terminador', 'b) <code>parseInt()</code> lê caracteres individuais; <code>readString()</code> lê bytes brutos', 'c) Ambos fazem a mesma coisa', 'd) <code>readString()</code> só funciona no Python'], correct: 0, explanation: '' },
+  { q: 'O que é packet framing e por que ele é importante na comunicação serial?', type: 'short', options: [], correct: 'Packet framing é a técnica de delimitar pacotes com marcadores de início e fim (ex.: sync bytes). É importante porque a serial é um fluxo contínuo de bytes e sem framing não é possível saber onde um pacote começa e termina.' },
+  { q: 'Em um protocolo serial, para que servem os sync bytes (bytes de sincronização)?', type: 'mc', options: ['a) Aumentar a velocidade da transmissão', 'b) Indicar o início de um pacote de dados', 'c) Criptografar a mensagem', 'd) Reduzir o consumo de energia'], correct: 1, explanation: '' },
+  { q: 'Um buffer overflow na serial pode ocorrer quando o microcontrolador recebe dados mais rápido do que consegue processá-los.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
+  { q: 'Qual é a ordem correta ao processar um pacote recebido pela serial?', type: 'mc', options: ['a) Validar checksum → verificar sync bytes → interpretar dados', 'b) Interpretar dados → validar checksum → verificar sync bytes', 'c) Verificar sync bytes → validar checksum → interpretar dados', 'd) A ordem não importa'], correct: 2, explanation: '' },
+  { q: 'Escreva um trecho de código Python que abre uma porta serial (<code>/dev/ttyACM0</code>, 115200 baud) e lê uma linha.', type: 'short', options: [], correct: '<code>import serial</code><br><code>ser = serial.Serial("/dev/ttyACM0", 115200)</code><br><code>linha = ser.readline().decode().strip()</code>' },
+  { q: 'Qual função do lado Arduino envia dados para a porta serial em formato legível por humanos?', type: 'mc', options: ['a) <code>Serial.write()</code>', 'b) <code>Serial.print()</code>', 'c) <code>Serial.read()</code>', 'd) <code>Serial.available()</code>'], correct: 1, explanation: '' },
+  { q: 'A função <code>Serial.available()</code> retorna o número de bytes disponíveis para leitura no buffer serial.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' }
 ];
 
 let userAnswers = {};

@@ -40,7 +40,7 @@ h1 { font-size: 28px; margin-bottom: 8px; }
 </head>
 <body>
 <div class="quiz-container">
-  <h1>Quiz — Semana 5: Integração Arduino ↔ Python</h1>
+  <h1>Quiz — Semana 5: PlatformIO</h1>
   <p class="subtitle">Selecione as respostas. O feedback é imediato.</p>
 
   <div class="score-bar" id="scoreBar">
@@ -56,14 +56,14 @@ h1 { font-size: 28px; margin-bottom: 8px; }
 
 <script>
 const questions = [
-  { q: 'Qual é a diferença entre <code>Serial.parseInt()</code> e <code>Serial.readString()</code>?', type: 'mc', options: ['a) <code>parseInt()</code> lê um valor inteiro; <code>readString()</code> lê uma string completa até o terminador', 'b) <code>parseInt()</code> lê caracteres individuais; <code>readString()</code> lê bytes brutos', 'c) Ambos fazem a mesma coisa', 'd) <code>readString()</code> só funciona no Python'], correct: 0, explanation: '' },
-  { q: 'O que é packet framing e por que ele é importante na comunicação serial?', type: 'short', options: [], correct: 'Packet framing é a técnica de delimitar pacotes com marcadores de início e fim (ex.: sync bytes). É importante porque a serial é um fluxo contínuo de bytes e sem framing não é possível saber onde um pacote começa e termina.' },
-  { q: 'Em um protocolo serial, para que servem os sync bytes (bytes de sincronização)?', type: 'mc', options: ['a) Aumentar a velocidade da transmissão', 'b) Indicar o início de um pacote de dados', 'c) Criptografar a mensagem', 'd) Reduzir o consumo de energia'], correct: 1, explanation: '' },
-  { q: 'Um buffer overflow na serial pode ocorrer quando o microcontrolador recebe dados mais rápido do que consegue processá-los.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
-  { q: 'Qual é a ordem correta ao processar um pacote recebido pela serial?', type: 'mc', options: ['a) Validar checksum → verificar sync bytes → interpretar dados', 'b) Interpretar dados → validar checksum → verificar sync bytes', 'c) Verificar sync bytes → validar checksum → interpretar dados', 'd) A ordem não importa'], correct: 2, explanation: '' },
-  { q: 'Escreva um trecho de código Python que abre uma porta serial (<code>/dev/ttyACM0</code>, 115200 baud) e lê uma linha.', type: 'short', options: [], correct: '<code>import serial</code><br><code>ser = serial.Serial("/dev/ttyACM0", 115200)</code><br><code>linha = ser.readline().decode().strip()</code>' },
-  { q: 'Qual função do lado Arduino envia dados para a porta serial em formato legível por humanos?', type: 'mc', options: ['a) <code>Serial.write()</code>', 'b) <code>Serial.print()</code>', 'c) <code>Serial.read()</code>', 'd) <code>Serial.available()</code>'], correct: 1, explanation: '' },
-  { q: 'A função <code>Serial.available()</code> retorna o número de bytes disponíveis para leitura no buffer serial.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' }
+  { q: 'Qual seção do <code>platformio.ini</code> é usada para definir configurações que se aplicam a todos os ambientes?', type: 'mc', options: ['a) <code>[env]</code>', 'b) <code>[platformio]</code>', 'c) <code>[common]</code>', 'd) <code>[default]</code>'], correct: 0, explanation: '' },
+  { q: 'A diretiva <code>lib_deps</code> no <code>platformio.ini</code> baixa e instala bibliotecas automaticamente, enquanto a instalação manual requer copiar arquivos para a pasta <code>lib/</code>.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
+  { q: 'Qual é a diferença entre as pastas <code>src/</code> e <code>lib/</code> em um projeto PlatformIO?', type: 'mc', options: ['a) <code>src/</code> contém o código-fonte principal; <code>lib/</code> contém bibliotecas (próprias ou de terceiros)', 'b) <code>src/</code> contém bibliotecas; <code>lib/</code> contém o código principal', 'c) Ambas contêm a mesma coisa', 'd) <code>lib/</code> é para arquivos binários compilados'], correct: 0, explanation: '' },
+  { q: 'O que é o Unity Test Framework e como ele é usado no PlatformIO?', type: 'short', options: [], correct: 'Unity é um framework de testes unitários em C. No PlatformIO, usa-se a test framework <code>unity</code> e os testes vão na pasta <code>test/</code> com funções <code>TEST_ASSERT_*</code>.' },
+  { q: 'Para que serve a opção <code>build_flags</code> no <code>platformio.ini</code>?', type: 'mc', options: ['a) Definir flags de compilação adicionais (ex.: <code>-DDEBUG</code>)', 'b) Definir a velocidade do processador', 'c) Configurar o nome do firmware', 'd) Alterar a taxa de transmissão serial'], correct: 0, explanation: '' },
+  { q: 'Explique a diferença entre um ambiente <code>native</code> e um ambiente embarcado (ex.: <code>teensy41</code>) no PlatformIO.', type: 'short', options: [], correct: 'O ambiente <code>native</code> compila para o sistema do computador (Linux/Windows/macOS) para testes rápidos. O ambiente embarcado compila para o microcontrolador alvo com seu conjunto de instruções e limitações específicas.' },
+  { q: 'No PlatformIO, é possível ter múltiplos ambientes de build no mesmo <code>platformio.ini</code>.', type: 'tf', options: ['Verdadeiro', 'Falso'], correct: 0, explanation: '' },
+  { q: 'Qual opção no <code>platformio.ini</code> especifica o microcontrolador alvo (ex.: ESP32, STM32)?', type: 'mc', options: ['a) <code>board = </code>', 'b) <code>platform = </code>', 'c) <code>framework = </code>', 'd) <code>target = </code>'], correct: 0, explanation: '' }
 ];
 
 let userAnswers = {};

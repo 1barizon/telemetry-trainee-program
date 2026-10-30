@@ -529,8 +529,9 @@ void readAllSensors() {
 ## Entregas relacionadas
 
 - Semana 3: Leitura de sensor via I2C
-- Semana 5: Integração Arduino ↔ Python
-- Semana 7: Contexto dos projetos reais
+- Semana 4: Sensores do Flight Computer simulados no Wokwi
+- Semana 6: Integração Arduino ↔ Python
+- Semana 8: Contexto dos projetos reais
 
 ## Referências
 

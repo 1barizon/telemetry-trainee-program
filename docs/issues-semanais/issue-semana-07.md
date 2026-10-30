@@ -1,18 +1,20 @@
-# Semana 7 - Contexto dos projetos (FC + Helike)
+# Semana 7 - KiCad basico
 
 ## Objetivo
 
-Documentar entendimento dos projetos.
+Criar esquematico simples e exportar PDF.
 
 ## Tarefas
 
-- [ ] Resumo tecnico do Flight Computer
-- [ ] Resumo tecnico do Helike
-- [ ] Mapa conceitual (FSM + Telemetria + Power)
+- [ ] Esquematico (sensor + MCU)
+- [ ] Export PDF + checklist ERC
 
 ## Criterios de aceite
 
-- [ ] Resumos claros
-- [ ] Mapa conceitual legivel
+- [ ] ERC sem erros criticos
+- [ ] PDF gerado
 
 ## Referencias
+
+- [Trilha KiCad](../trilhas/kicad.md)
+- [Exemplo KiCad](../examples/kicad-exemplo.md)
