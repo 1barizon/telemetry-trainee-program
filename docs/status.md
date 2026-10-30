@@ -6,6 +6,6 @@ _Nenhuma entrega registrada ainda._
 
 **Legenda:** ✅ entregue · ⬜ pendente
 
-Última atualização: 2026-10-25 22:04 UTC
+Última atualização: 2026-10-30 23:26 UTC
 
 > Gerado por `scripts/gerar-status.py`. Não edite manualmente.
